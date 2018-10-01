@@ -90,6 +90,26 @@ viewBoard grid =
         rows
 
 
+moveToText move =
+    let
+        ( ox, oy ) =
+            move.origin
+
+        ( dx, dy ) =
+            move.destination
+    in
+    move.card
+        ++ " ("
+        ++ String.fromInt ox
+        ++ ","
+        ++ String.fromInt oy
+        ++ ") -> ("
+        ++ String.fromInt dx
+        ++ ","
+        ++ String.fromInt dy
+        ++ ")"
+
+
 viewMove gameState move =
     let
         nextState =
@@ -97,7 +117,7 @@ viewMove gameState move =
     in
     Html.div
         []
-        [ Html.p [] [ Html.text <| Debug.toString move ]
+        [ Html.p [] [ Html.text <| moveToText move ]
         , viewBoard nextState.grid
         , case Game.endGame nextState of
             Just _ ->
