@@ -90,13 +90,21 @@ viewBoard grid =
         rows
 
 
-viewMove move =
-    Debug.toString move
+viewMove gameState move =
+    let
+        nextGrid =
+            (Game.applyMove gameState move).grid
+    in
+    Html.div
+        []
+        [ Html.p [] [ Html.text <| Debug.toString move ]
+        , viewBoard nextGrid
+        ]
 
 
 viewMoves gameState =
     Game.validMoves gameState
-        |> List.map (viewMove >> Html.text >> List.singleton >> Html.p [])
+        |> List.map (viewMove gameState)
         |> Html.div []
 
 

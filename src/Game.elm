@@ -1,4 +1,4 @@
-module Game exposing (Card, Pawn(..), Player(..), State, exampleGame, flipCard, validMoves)
+module Game exposing (Card, Pawn(..), Player(..), State, applyMove, exampleGame, flipCard, validMoves)
 
 import Dict exposing (Dict)
 import Set exposing (Set)
@@ -75,7 +75,7 @@ exampleGame =
     , bottomCards = Set.fromList [ "Monkey", "Crane" ]
     , nextCard = "Dragon"
     , cardDefinitions = baseCards
-    , currentPlayer = Top
+    , currentPlayer = Bottom
     }
 
 
@@ -141,12 +141,12 @@ validMoves gameState =
                 |> Set.toList
                 |> List.concatMap
                     (\cardName ->
-                        offsets cardName
+                        pawnsPos
                             |> List.concatMap
-                                (\( dx, dy ) ->
-                                    pawnsPos
+                                (\( x, y ) ->
+                                    offsets cardName
                                         |> List.map
-                                            (\( x, y ) ->
+                                            (\( dx, dy ) ->
                                                 Move cardName ( x, y ) ( x + dx, y + dy )
                                             )
                                 )
@@ -163,3 +163,56 @@ validMoves gameState =
                    )
     in
     List.filter validMove potentialMoves
+
+
+applyMove : State -> Move -> State
+applyMove gameState move =
+    let
+        grid =
+            case Dict.get move.origin gameState.grid of
+                Just pawn ->
+                    gameState.grid
+                        |> Dict.remove move.origin
+                        |> Dict.insert move.destination pawn
+
+                Nothing ->
+                    gameState.grid
+
+        topCards =
+            case gameState.currentPlayer of
+                Top ->
+                    gameState.topCards
+                        |> Set.remove move.card
+                        |> Set.insert gameState.nextCard
+
+                Bottom ->
+                    gameState.topCards
+
+        bottomCards =
+            case gameState.currentPlayer of
+                Bottom ->
+                    gameState.bottomCards
+                        |> Set.remove move.card
+                        |> Set.insert gameState.nextCard
+
+                Top ->
+                    gameState.bottomCards
+
+        nextCard =
+            move.card
+
+        nextPlayer =
+            case gameState.currentPlayer of
+                Bottom ->
+                    Top
+
+                Top ->
+                    Bottom
+    in
+    { gameState
+        | grid = grid
+        , topCards = topCards
+        , bottomCards = bottomCards
+        , nextCard = nextCard
+        , currentPlayer = nextPlayer
+    }
