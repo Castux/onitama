@@ -1,4 +1,4 @@
-module Game exposing (Card, Pawn(..), Player(..), State, exampleGame)
+module Game exposing (Card, Pawn(..), Player(..), State, exampleGame, flipCard, validMoves)
 
 import Dict exposing (Dict)
 import Set exposing (Set)
@@ -15,17 +15,32 @@ type Player
 
 
 type alias Card =
-    Set ( Int, Int )
+    List ( Int, Int )
+
+
+type alias Grid =
+    Dict ( Int, Int ) ( Pawn, Player )
 
 
 type alias State =
-    { grid : Dict ( Int, Int ) ( Pawn, Player )
+    { grid : Grid
     , cardDefinitions : Dict String Card
     , topCards : Set String
     , bottomCards : Set String
     , nextCard : String
     , currentPlayer : Player
     }
+
+
+type alias Move =
+    { card : String
+    , origin : ( Int, Int )
+    , destination : ( Int, Int )
+    }
+
+
+
+-- Setup
 
 
 startingGrid =
@@ -45,11 +60,11 @@ startingGrid =
 
 baseCards =
     Dict.fromList
-        [ ( "Tiger", Set.fromList [ ( 0, -1 ), ( 0, 2 ) ] )
-        , ( "Crab", Set.fromList [ ( -2, 0 ), ( 0, 1 ), ( 2, 0 ) ] )
-        , ( "Monkey", Set.fromList [ ( -1, 1 ), ( -1, -1 ), ( 1, 1 ), ( 1, -1 ) ] )
-        , ( "Crane", Set.fromList [ ( -1, -1 ), ( 0, 1 ), ( 1, -1 ) ] )
-        , ( "Dragon", Set.fromList [ ( -2, 1 ), ( -1, -1 ), ( 1, -1 ), ( 2, 1 ) ] )
+        [ ( "Tiger", [ ( 0, -1 ), ( 0, 2 ) ] )
+        , ( "Crab", [ ( -2, 0 ), ( 0, 1 ), ( 2, 0 ) ] )
+        , ( "Monkey", [ ( -1, 1 ), ( -1, -1 ), ( 1, 1 ), ( 1, -1 ) ] )
+        , ( "Crane", [ ( -1, -1 ), ( 0, 1 ), ( 1, -1 ) ] )
+        , ( "Dragon", [ ( -2, 1 ), ( -1, -1 ), ( 1, -1 ), ( 2, 1 ) ] )
         ]
 
 
@@ -60,5 +75,91 @@ exampleGame =
     , bottomCards = Set.fromList [ "Monkey", "Crane" ]
     , nextCard = "Dragon"
     , cardDefinitions = baseCards
-    , currentPlayer = Bottom
+    , currentPlayer = Top
     }
+
+
+
+-- Utils
+
+
+playerPawnsPositions : Player -> Grid -> List ( Int, Int )
+playerPawnsPositions player grid =
+    grid
+        |> Dict.toList
+        |> List.filterMap
+            (\( pos, ( pawn, p ) ) ->
+                if p == player then
+                    Just pos
+
+                else
+                    Nothing
+            )
+
+
+validPosition : ( Int, Int ) -> Bool
+validPosition ( x, y ) =
+    x >= 1 && x <= 5 && y >= 1 && y <= 5
+
+
+flipCard : Card -> Card
+flipCard card =
+    List.map (\( x, y ) -> ( -x, -y )) card
+
+
+
+-- Moves
+
+
+validMoves : State -> List Move
+validMoves gameState =
+    let
+        pawnsPos =
+            playerPawnsPositions gameState.currentPlayer gameState.grid
+
+        cards =
+            case gameState.currentPlayer of
+                Top ->
+                    gameState.topCards
+
+                Bottom ->
+                    gameState.bottomCards
+
+        offsets card =
+            Dict.get card gameState.cardDefinitions
+                |> Maybe.withDefault []
+                |> (case gameState.currentPlayer of
+                        Top ->
+                            flipCard
+
+                        Bottom ->
+                            identity
+                   )
+
+        potentialMoves =
+            cards
+                |> Set.toList
+                |> List.concatMap
+                    (\cardName ->
+                        offsets cardName
+                            |> List.concatMap
+                                (\( dx, dy ) ->
+                                    pawnsPos
+                                        |> List.map
+                                            (\( x, y ) ->
+                                                Move cardName ( x, y ) ( x + dx, y + dy )
+                                            )
+                                )
+                    )
+
+        validMove { card, origin, destination } =
+            validPosition destination
+                && (case Dict.get destination gameState.grid of
+                        Nothing ->
+                            True
+
+                        Just ( pawn, player ) ->
+                            player /= gameState.currentPlayer
+                   )
+    in
+    List.filter validMove potentialMoves

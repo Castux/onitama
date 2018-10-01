@@ -15,12 +15,19 @@ pairRange ( x1, y1 ) ( x2, y2 ) =
             )
 
 
-viewCard : Game.State -> String -> Html.Html msg
-viewCard gamestate card =
+viewCard : Game.State -> Bool -> String -> Html.Html msg
+viewCard gameState flip card =
     let
         cardDef =
-            Dict.get card gamestate.cardDefinitions
-                |> Maybe.withDefault Set.empty
+            Dict.get card gameState.cardDefinitions
+                |> Maybe.withDefault []
+                |> (if flip then
+                        Game.flipCard
+
+                    else
+                        identity
+                   )
+                |> Set.fromList
 
         rows =
             List.range -2 2
@@ -83,15 +90,27 @@ viewBoard grid =
         rows
 
 
-view gamestate =
+viewMove move =
+    Debug.toString move
+
+
+viewMoves gameState =
+    Game.validMoves gameState
+        |> List.map (viewMove >> Html.text >> List.singleton >> Html.p [])
+        |> Html.div []
+
+
+view gameState =
     Html.div
         []
         [ Html.h1 [] [ Html.text "Top player" ]
-        , gamestate.topCards |> Set.toList |> List.map (viewCard gamestate) |> Html.div []
+        , gameState.topCards |> Set.toList |> List.map (viewCard gameState True) |> Html.div []
         , Html.h1 [] [ Html.text "Bottom player" ]
-        , gamestate.bottomCards |> Set.toList |> List.map (viewCard gamestate) |> Html.div []
+        , gameState.bottomCards |> Set.toList |> List.map (viewCard gameState False) |> Html.div []
         , Html.h1 [] [ Html.text "Next card" ]
-        , gamestate.nextCard |> viewCard gamestate
+        , gameState.nextCard |> viewCard gameState False
         , Html.h1 [] [ Html.text "Board" ]
-        , gamestate.grid |> viewBoard
+        , gameState.grid |> viewBoard
+        , Html.h1 [] [ Html.text "Moves" ]
+        , gameState |> viewMoves
         ]
