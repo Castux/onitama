@@ -37,7 +37,7 @@ viewCard gamestate card =
                                             Html.td [] [ Html.text "O" ]
 
                                         else
-                                            Html.td [] [ Html.text " " ]
+                                            Html.td [] [ Html.text "." ]
                                     )
                             )
                     )
