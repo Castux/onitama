@@ -92,13 +92,19 @@ viewBoard grid =
 
 viewMove gameState move =
     let
-        nextGrid =
-            (Game.applyMove gameState move).grid
+        nextState =
+            Game.applyMove gameState move
     in
     Html.div
         []
         [ Html.p [] [ Html.text <| Debug.toString move ]
-        , viewBoard nextGrid
+        , viewBoard nextState.grid
+        , case Game.endGame nextState of
+            Just _ ->
+                Html.p [] [ Html.text "Game over" ]
+
+            Nothing ->
+                Html.p [] [ Html.text "Game continues" ]
         ]
 
 

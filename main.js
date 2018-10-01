@@ -5862,10 +5862,75 @@ var author$project$Game$applyMove = F2(
 			gameState,
 			{bottomCards: bottomCards, currentPlayer: nextPlayer, grid: grid, nextCard: nextCard, topCards: topCards});
 	});
+var author$project$Game$Capture = function (a) {
+	return {$: 'Capture', a: a};
+};
+var author$project$Game$Position = function (a) {
+	return {$: 'Position', a: a};
+};
+var elm$core$Dict$values = function (dict) {
+	return A3(
+		elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var author$project$Game$hasMaster = F2(
+	function (gameState, player) {
+		return A2(
+			elm$core$List$any,
+			elm$core$Basics$eq(
+				_Utils_Tuple2(author$project$Game$Master, player)),
+			elm$core$Dict$values(gameState.grid));
+	});
+var elm$core$Basics$not = _Basics_not;
+var author$project$Game$endGame = function (gameState) {
+	return (!A2(author$project$Game$hasMaster, gameState, author$project$Game$Top)) ? elm$core$Maybe$Just(
+		author$project$Game$Capture(author$project$Game$Bottom)) : ((!A2(author$project$Game$hasMaster, gameState, author$project$Game$Bottom)) ? elm$core$Maybe$Just(
+		author$project$Game$Capture(author$project$Game$Top)) : (_Utils_eq(
+		A2(
+			elm$core$Dict$get,
+			_Utils_Tuple2(3, 5),
+			gameState.grid),
+		elm$core$Maybe$Just(
+			_Utils_Tuple2(author$project$Game$Master, author$project$Game$Bottom))) ? elm$core$Maybe$Just(
+		author$project$Game$Position(author$project$Game$Bottom)) : (_Utils_eq(
+		A2(
+			elm$core$Dict$get,
+			_Utils_Tuple2(3, 1),
+			gameState.grid),
+		elm$core$Maybe$Just(
+			_Utils_Tuple2(author$project$Game$Master, author$project$Game$Top))) ? elm$core$Maybe$Just(
+		author$project$Game$Position(author$project$Game$Top)) : elm$core$Maybe$Nothing)));
+};
 var elm$core$Debug$toString = _Debug_toString;
 var author$project$View$viewMove = F2(
 	function (gameState, move) {
-		var nextGrid = A2(author$project$Game$applyMove, gameState, move).grid;
+		var nextState = A2(author$project$Game$applyMove, gameState, move);
 		return A2(
 			elm$html$Html$div,
 			_List_Nil,
@@ -5879,7 +5944,27 @@ var author$project$View$viewMove = F2(
 							elm$html$Html$text(
 							elm$core$Debug$toString(move))
 						])),
-					author$project$View$viewBoard(nextGrid)
+					author$project$View$viewBoard(nextState.grid),
+					function () {
+					var _n0 = author$project$Game$endGame(nextState);
+					if (_n0.$ === 'Just') {
+						return A2(
+							elm$html$Html$p,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Game over')
+								]));
+					} else {
+						return A2(
+							elm$html$Html$p,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Game continues')
+								]));
+					}
+				}()
 				]));
 	});
 var author$project$View$viewMoves = function (gameState) {
