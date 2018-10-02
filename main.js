@@ -4573,7 +4573,7 @@ var author$project$Game$startingGrid = elm$core$Dict$fromList(
 			_Utils_Tuple2(2, 1),
 			_Utils_Tuple2(0, 1)),
 			_Utils_Tuple2(
-			_Utils_Tuple2(3, 1),
+			_Utils_Tuple2(3, 3),
 			_Utils_Tuple2(1, 1)),
 			_Utils_Tuple2(
 			_Utils_Tuple2(4, 1),
@@ -4588,7 +4588,7 @@ var author$project$Game$startingGrid = elm$core$Dict$fromList(
 			_Utils_Tuple2(2, 5),
 			_Utils_Tuple2(0, 0)),
 			_Utils_Tuple2(
-			_Utils_Tuple2(3, 5),
+			_Utils_Tuple2(3, 4),
 			_Utils_Tuple2(1, 0)),
 			_Utils_Tuple2(
 			_Utils_Tuple2(4, 5),
@@ -5305,73 +5305,6 @@ var author$project$Game$applyMove = F2(
 			gameState,
 			{r: bottomCards, g: nextPlayer, f: grid, E: nextCard, x: topCards});
 	});
-var author$project$Game$Capture = function (a) {
-	return {$: 0, a: a};
-};
-var author$project$Game$Position = function (a) {
-	return {$: 1, a: a};
-};
-var elm$core$Dict$values = function (dict) {
-	return A3(
-		elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2(elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var elm$core$Basics$False = 1;
-var elm$core$Basics$True = 0;
-var elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var author$project$Game$hasMaster = F2(
-	function (gameState, player) {
-		return A2(
-			elm$core$List$any,
-			elm$core$Basics$eq(
-				_Utils_Tuple2(1, player)),
-			elm$core$Dict$values(gameState.f));
-	});
-var elm$core$Basics$not = _Basics_not;
-var author$project$Game$endGame = function (gameState) {
-	return (!A2(author$project$Game$hasMaster, gameState, 0)) ? elm$core$Maybe$Just(
-		author$project$Game$Capture(1)) : ((!A2(author$project$Game$hasMaster, gameState, 1)) ? elm$core$Maybe$Just(
-		author$project$Game$Capture(0)) : (_Utils_eq(
-		A2(
-			elm$core$Dict$get,
-			_Utils_Tuple2(3, 5),
-			gameState.f),
-		elm$core$Maybe$Just(
-			_Utils_Tuple2(1, 1))) ? elm$core$Maybe$Just(
-		author$project$Game$Position(1)) : (_Utils_eq(
-		A2(
-			elm$core$Dict$get,
-			_Utils_Tuple2(3, 1),
-			gameState.f),
-		elm$core$Maybe$Just(
-			_Utils_Tuple2(1, 0))) ? elm$core$Maybe$Just(
-		author$project$Game$Position(0)) : elm$core$Maybe$Nothing)));
-};
 var author$project$Game$Move = F3(
 	function (card, origin, destination) {
 		return {B: card, O: destination, K: origin};
@@ -5425,6 +5358,7 @@ var author$project$Game$validPosition = function (_n0) {
 	var y = _n0.b;
 	return (x >= 1) && ((x <= 5) && ((y >= 1) && (y <= 5)));
 };
+var elm$core$Basics$True = 0;
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$append = F2(
 	function (xs, ys) {
@@ -5519,8 +5453,64 @@ var author$project$Game$validMoves = function (gameState) {
 		elm$core$Set$toList(cards));
 	return A2(elm$core$List$filter, validMove, potentialMoves);
 };
+var elm$core$Dict$values = function (dict) {
+	return A3(
+		elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var elm$core$Basics$False = 1;
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var author$project$Game$hasMaster = F2(
+	function (gameState, player) {
+		return A2(
+			elm$core$List$any,
+			elm$core$Basics$eq(
+				_Utils_Tuple2(1, player)),
+			elm$core$Dict$values(gameState.f));
+	});
+var elm$core$Basics$not = _Basics_not;
+var author$project$Game$winner = function (gameState) {
+	return (!A2(author$project$Game$hasMaster, gameState, 0)) ? elm$core$Maybe$Just(1) : ((!A2(author$project$Game$hasMaster, gameState, 1)) ? elm$core$Maybe$Just(0) : (_Utils_eq(
+		A2(
+			elm$core$Dict$get,
+			_Utils_Tuple2(3, 5),
+			gameState.f),
+		elm$core$Maybe$Just(
+			_Utils_Tuple2(1, 1))) ? elm$core$Maybe$Just(1) : (_Utils_eq(
+		A2(
+			elm$core$Dict$get,
+			_Utils_Tuple2(3, 1),
+			gameState.f),
+		elm$core$Maybe$Just(
+			_Utils_Tuple2(1, 0))) ? elm$core$Maybe$Just(0) : elm$core$Maybe$Nothing)));
+};
 var author$project$Solver$children = function (state) {
-	var _n0 = author$project$Game$endGame(state);
+	var _n0 = author$project$Game$winner(state);
 	if (!_n0.$) {
 		return _List_Nil;
 	} else {
@@ -5535,15 +5525,10 @@ var author$project$Solver$children = function (state) {
 	}
 };
 var author$project$Solver$naiveValue = function (state) {
-	var _n0 = author$project$Game$endGame(state);
+	var _n0 = author$project$Game$winner(state);
 	if (!_n0.$) {
-		if (_n0.a.$ === 1) {
-			var winner = _n0.a.a;
-			return _Utils_eq(winner, state.g) ? 1 : (-1);
-		} else {
-			var winner = _n0.a.a;
-			return _Utils_eq(winner, state.g) ? 1 : (-1);
-		}
+		var winner = _n0.a;
+		return _Utils_eq(winner, state.g) ? 1 : (-1);
 	} else {
 		return 0;
 	}

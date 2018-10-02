@@ -1,4 +1,15 @@
-module Game exposing (Card, EndGame(..), Move, Pawn(..), Player(..), State, applyMove, endGame, exampleGame, flipCard, validMoves)
+module Game exposing
+    ( Card
+    , Move
+    , Pawn(..)
+    , Player(..)
+    , State
+    , applyMove
+    , exampleGame
+    , flipCard
+    , validMoves
+    , winner
+    )
 
 import Dict exposing (Dict)
 import Set exposing (Set)
@@ -37,11 +48,6 @@ type alias Move =
     , origin : ( Int, Int )
     , destination : ( Int, Int )
     }
-
-
-type EndGame
-    = Capture Player
-    | Position Player
 
 
 
@@ -233,19 +239,19 @@ hasMaster gameState player =
         |> List.any ((==) ( Master, player ))
 
 
-endGame : State -> Maybe EndGame
-endGame gameState =
+winner : State -> Maybe Player
+winner gameState =
     if not (hasMaster gameState Top) then
-        Just (Capture Bottom)
+        Just Bottom
 
     else if not (hasMaster gameState Bottom) then
-        Just (Capture Top)
+        Just Top
 
     else if Dict.get ( 3, 5 ) gameState.grid == Just ( Master, Bottom ) then
-        Just (Position Bottom)
+        Just Bottom
 
     else if Dict.get ( 3, 1 ) gameState.grid == Just ( Master, Top ) then
-        Just (Position Top)
+        Just Top
 
     else
         Nothing

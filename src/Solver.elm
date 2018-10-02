@@ -1,19 +1,12 @@
 module Solver exposing (test)
 
-import Game exposing (EndGame(..))
+import Game
 import Negamax
 
 
 naiveValue state =
-    case Game.endGame state of
-        Just (Position winner) ->
-            if winner == state.currentPlayer then
-                1
-
-            else
-                -1
-
-        Just (Capture winner) ->
+    case Game.winner state of
+        Just winner ->
             if winner == state.currentPlayer then
                 1
 
@@ -25,7 +18,7 @@ naiveValue state =
 
 
 children state =
-    case Game.endGame state of
+    case Game.winner state of
         Just _ ->
             []
 

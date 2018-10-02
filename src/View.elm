@@ -119,12 +119,6 @@ viewMove gameState move =
         []
         [ Html.p [] [ Html.text <| moveToText move ]
         , viewBoard nextState.grid
-        , case Game.endGame nextState of
-            Just _ ->
-                Html.p [] [ Html.text "Game over" ]
-
-            Nothing ->
-                Html.p [] [ Html.text "Game continues" ]
         ]
 
 
