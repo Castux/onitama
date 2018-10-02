@@ -4642,7 +4642,7 @@ var elm$core$Tuple$mapFirst = F2(
 			func(x),
 			y);
 	});
-var author$project$Negamax$negamax2 = F4(
+var author$project$Negamax$negamax = F4(
 	function (valueFunction, childrenFunction, maxDepth, state) {
 		var terminal = _Utils_Tuple2(
 			valueFunction(state),
@@ -4664,7 +4664,7 @@ var author$project$Negamax$negamax2 = F4(
 							var _n2 = A2(
 								elm$core$Tuple$mapFirst,
 								elm$core$Basics$mul(-1),
-								A4(author$project$Negamax$negamax2, valueFunction, childrenFunction, maxDepth - 1, child));
+								A4(author$project$Negamax$negamax, valueFunction, childrenFunction, maxDepth - 1, child));
 							var value = _n2.a;
 							var nextMoves = _n2.b;
 							if (_Utils_cmp(value, currentMax) > 0) {
@@ -5460,7 +5460,7 @@ var author$project$Solver$naiveValue = function (state) {
 		return 0;
 	}
 };
-var author$project$Solver$test = A4(author$project$Negamax$negamax2, author$project$Solver$naiveValue, author$project$Solver$children, 5, author$project$Game$exampleGame);
+var author$project$Solver$test = A4(author$project$Negamax$negamax, author$project$Solver$naiveValue, author$project$Solver$children, 5, author$project$Game$exampleGame);
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
 		return true;
