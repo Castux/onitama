@@ -8,6 +8,10 @@ import Solver
 import View
 
 
+flip f x y =
+    f y x
+
+
 init : String -> ( ( Float, List Game.Move ), Cmd msg )
 init flags =
     let
@@ -26,9 +30,18 @@ subscriptions state =
 
 
 view state =
+    let
+        ( score, moves ) =
+            state
+
+        finalPos =
+            List.foldl (flip Game.applyMove) Game.exampleGame moves
+    in
     Html.div []
         [ View.view Game.exampleGame
-        , Html.text <| Debug.toString <| state
+        , Html.p [] <| List.singleton <| Html.text <| String.fromFloat score
+        , List.map View.moveToText moves |> String.join " / " |> Html.text |> List.singleton |> Html.p []
+        , View.viewBoard finalPos.grid
         ]
 
 

@@ -17,6 +17,27 @@ naiveValue state =
             0
 
 
+pawnCount state =
+    let
+        otherPlayer =
+            case state.currentPlayer of
+                Game.Top ->
+                    Game.Bottom
+
+                Game.Bottom ->
+                    Game.Top
+    in
+    case naiveValue state of
+        0 ->
+            toFloat
+                (List.length (Game.pawns state state.currentPlayer)
+                    - List.length (Game.pawns state otherPlayer)
+                )
+
+        x ->
+            toFloat x * 100.0
+
+
 children state =
     case Game.winner state of
         Just _ ->
@@ -29,4 +50,4 @@ children state =
 
 
 test =
-    Negamax.negamax naiveValue children 6 -1.0 1.0 Game.exampleGame
+    Negamax.negamax pawnCount children 7 -100 100 Game.exampleGame

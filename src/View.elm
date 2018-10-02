@@ -1,4 +1,4 @@
-module View exposing (view)
+module View exposing (moveToText, view, viewBoard)
 
 import Dict
 import Game

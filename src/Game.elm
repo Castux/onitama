@@ -7,6 +7,7 @@ module Game exposing
     , applyMove
     , exampleGame
     , flipCard
+    , pawns
     , validMoves
     , winner
     )
@@ -237,6 +238,12 @@ hasMaster gameState player =
     gameState.grid
         |> Dict.values
         |> List.any ((==) ( Master, player ))
+
+
+pawns gameState player =
+    gameState.grid
+        |> Dict.values
+        |> List.filter (Tuple.second >> (==) player)
 
 
 winner : State -> Maybe Player
