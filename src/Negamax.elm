@@ -3,8 +3,8 @@ module Negamax exposing (negamax)
 import List.Extra
 
 
-negamax : (state -> Float) -> (state -> List ( move, state )) -> Int -> state -> ( Float, List move )
-negamax valueFunction childrenFunction maxDepth state =
+negamax : (state -> Float) -> (state -> List ( move, state )) -> Int -> Float -> Float -> state -> ( Float, List move )
+negamax valueFunction childrenFunction maxDepth alpha beta state =
     let
         terminal =
             ( valueFunction state, [] )
@@ -14,7 +14,7 @@ negamax valueFunction childrenFunction maxDepth state =
 
     else
         let
-            helper currentMax result list =
+            helper currentMax result currentAlpha list =
                 case list of
                     [] ->
                         ( currentMax, result )
@@ -22,18 +22,28 @@ negamax valueFunction childrenFunction maxDepth state =
                     ( move, child ) :: xs ->
                         let
                             ( value, nextMoves ) =
-                                negamax valueFunction childrenFunction (maxDepth - 1) child
+                                negamax valueFunction childrenFunction (maxDepth - 1) -beta -alpha child
                                     |> Tuple.mapFirst ((*) -1)
+
+                            ( newMax, newResult ) =
+                                if value > currentMax then
+                                    ( value, move :: nextMoves )
+
+                                else
+                                    ( currentMax, result )
+
+                            newAlpha =
+                                max currentAlpha value
                         in
-                        if value > currentMax then
-                            helper value (move :: nextMoves) xs
+                        if newAlpha >= beta then
+                            ( newMax, newResult )
 
                         else
-                            helper currentMax result xs
+                            helper newMax newResult newAlpha xs
         in
         case childrenFunction state of
             [] ->
                 terminal
 
             list ->
-                helper (-1.0 / 0.0) [] list
+                helper (-1.0 / 0.0) [] alpha list

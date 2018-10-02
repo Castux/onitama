@@ -4570,7 +4570,7 @@ var author$project$Game$startingGrid = elm$core$Dict$fromList(
 			_Utils_Tuple2(1, 1),
 			_Utils_Tuple2(author$project$Game$Student, author$project$Game$Bottom)),
 			_Utils_Tuple2(
-			_Utils_Tuple2(2, 2),
+			_Utils_Tuple2(2, 1),
 			_Utils_Tuple2(author$project$Game$Student, author$project$Game$Bottom)),
 			_Utils_Tuple2(
 			_Utils_Tuple2(3, 1),
@@ -4631,7 +4631,12 @@ var elm$core$Basics$apR = F2(
 	});
 var elm$core$Basics$eq = _Utils_equal;
 var elm$core$Basics$fdiv = _Basics_fdiv;
+var elm$core$Basics$ge = _Utils_ge;
 var elm$core$Basics$gt = _Utils_gt;
+var elm$core$Basics$max = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) > 0) ? x : y;
+	});
 var elm$core$Basics$mul = _Basics_mul;
 var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Tuple$mapFirst = F2(
@@ -4642,16 +4647,16 @@ var elm$core$Tuple$mapFirst = F2(
 			func(x),
 			y);
 	});
-var author$project$Negamax$negamax = F4(
-	function (valueFunction, childrenFunction, maxDepth, state) {
+var author$project$Negamax$negamax = F6(
+	function (valueFunction, childrenFunction, maxDepth, alpha, beta, state) {
 		var terminal = _Utils_Tuple2(
 			valueFunction(state),
 			_List_Nil);
 		if (!maxDepth) {
 			return terminal;
 		} else {
-			var helper = F3(
-				function (currentMax, result, list) {
+			var helper = F4(
+				function (currentMax, result, currentAlpha, list) {
 					helper:
 					while (true) {
 						if (!list.b) {
@@ -4664,35 +4669,37 @@ var author$project$Negamax$negamax = F4(
 							var _n2 = A2(
 								elm$core$Tuple$mapFirst,
 								elm$core$Basics$mul(-1),
-								A4(author$project$Negamax$negamax, valueFunction, childrenFunction, maxDepth - 1, child));
+								A6(author$project$Negamax$negamax, valueFunction, childrenFunction, maxDepth - 1, -beta, -alpha, child));
 							var value = _n2.a;
 							var nextMoves = _n2.b;
-							if (_Utils_cmp(value, currentMax) > 0) {
-								var $temp$currentMax = value,
-									$temp$result = A2(elm$core$List$cons, move, nextMoves),
-									$temp$list = xs;
-								currentMax = $temp$currentMax;
-								result = $temp$result;
-								list = $temp$list;
-								continue helper;
+							var newAlpha = A2(elm$core$Basics$max, currentAlpha, value);
+							var _n3 = (_Utils_cmp(value, currentMax) > 0) ? _Utils_Tuple2(
+								value,
+								A2(elm$core$List$cons, move, nextMoves)) : _Utils_Tuple2(currentMax, result);
+							var newMax = _n3.a;
+							var newResult = _n3.b;
+							if (_Utils_cmp(newAlpha, beta) > -1) {
+								return _Utils_Tuple2(newMax, newResult);
 							} else {
-								var $temp$currentMax = currentMax,
-									$temp$result = result,
+								var $temp$currentMax = newMax,
+									$temp$result = newResult,
+									$temp$currentAlpha = newAlpha,
 									$temp$list = xs;
 								currentMax = $temp$currentMax;
 								result = $temp$result;
+								currentAlpha = $temp$currentAlpha;
 								list = $temp$list;
 								continue helper;
 							}
 						}
 					}
 				});
-			var _n3 = childrenFunction(state);
-			if (!_n3.b) {
+			var _n4 = childrenFunction(state);
+			if (!_n4.b) {
 				return terminal;
 			} else {
-				var list = _n3;
-				return A3(helper, (-1.0) / 0.0, _List_Nil, list);
+				var list = _n4;
+				return A4(helper, (-1.0) / 0.0, _List_Nil, alpha, list);
 			}
 		}
 	});
@@ -5269,7 +5276,6 @@ var author$project$Game$playerPawnsPositions = F2(
 			elm$core$Dict$toList(grid));
 	});
 var elm$core$Basics$and = _Basics_and;
-var elm$core$Basics$ge = _Utils_ge;
 var elm$core$Basics$le = _Utils_le;
 var author$project$Game$validPosition = function (_n0) {
 	var x = _n0.a;
@@ -5460,7 +5466,7 @@ var author$project$Solver$naiveValue = function (state) {
 		return 0;
 	}
 };
-var author$project$Solver$test = A4(author$project$Negamax$negamax, author$project$Solver$naiveValue, author$project$Solver$children, 5, author$project$Game$exampleGame);
+var author$project$Solver$test = A6(author$project$Negamax$negamax, author$project$Solver$naiveValue, author$project$Solver$children, 6, -1.0, 1.0, author$project$Game$exampleGame);
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
 		return true;
@@ -5537,10 +5543,6 @@ var elm$core$Basics$apL = F2(
 		return f(x);
 	});
 var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$max = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) > 0) ? x : y;
-	});
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
