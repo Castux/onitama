@@ -29,4 +29,4 @@ children state =
 
 
 test =
-    Negamax.negamax naiveValue children 5 Game.exampleGame
+    Negamax.negamax2 naiveValue children 5 Game.exampleGame

@@ -57,13 +57,13 @@ type alias Move =
 startingGrid =
     Dict.fromList
         [ ( ( 1, 1 ), ( Student, Bottom ) )
-        , ( ( 2, 1 ), ( Student, Bottom ) )
+        , ( ( 2, 2 ), ( Student, Bottom ) )
         , ( ( 3, 1 ), ( Master, Bottom ) )
         , ( ( 4, 1 ), ( Student, Bottom ) )
         , ( ( 5, 1 ), ( Student, Bottom ) )
         , ( ( 1, 5 ), ( Student, Top ) )
         , ( ( 2, 5 ), ( Student, Top ) )
-        , ( ( 3, 5 ), ( Master, Top ) )
+        , ( ( 3, 3 ), ( Master, Top ) )
         , ( ( 4, 5 ), ( Student, Top ) )
         , ( ( 5, 5 ), ( Student, Top ) )
         ]

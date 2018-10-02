@@ -8,13 +8,13 @@ import Solver
 import View
 
 
-init : String -> ( Negamax.Node Game.State Game.Move, Cmd msg )
+init : String -> ( ( Float, List Game.Move ), Cmd msg )
 init flags =
     let
-        node =
+        result =
             Solver.test
     in
-    ( node, Cmd.none )
+    ( result, Cmd.none )
 
 
 update msg state =
@@ -26,13 +26,9 @@ subscriptions state =
 
 
 view state =
-    let
-        (Negamax.Node node) =
-            state
-    in
     Html.div []
-        [ Html.text <| String.fromFloat <| Negamax.getValue state
-        , View.view node.state
+        [ View.view Game.exampleGame
+        , Html.text <| Debug.toString <| state
         ]
 
 
