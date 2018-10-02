@@ -1,4 +1,4 @@
-module Game exposing (Card, Pawn(..), Player(..), State, applyMove, endGame, exampleGame, flipCard, validMoves)
+module Game exposing (Card, EndGame(..), Move, Pawn(..), Player(..), State, applyMove, endGame, exampleGame, flipCard, validMoves)
 
 import Dict exposing (Dict)
 import Set exposing (Set)

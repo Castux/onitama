@@ -3,12 +3,18 @@ module Main exposing (main)
 import Browser
 import Game
 import Html
+import Negamax
+import Solver
 import View
 
 
-init : String -> ( Game.State, Cmd msg )
+init : String -> ( Negamax.Node Game.State Game.Move, Cmd msg )
 init flags =
-    ( Game.exampleGame, Cmd.none )
+    let
+        node =
+            Solver.test
+    in
+    ( node, Cmd.none )
 
 
 update msg state =
@@ -20,7 +26,14 @@ subscriptions state =
 
 
 view state =
-    Html.div [] [ View.view state ]
+    let
+        (Negamax.Node node) =
+            state
+    in
+    Html.div []
+        [ Html.text <| String.fromFloat <| Negamax.getValue state
+        , View.view node.state
+        ]
 
 
 main =

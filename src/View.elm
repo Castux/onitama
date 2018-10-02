@@ -145,6 +145,4 @@ view gameState =
         , gameState.nextCard |> viewCard gameState False
         , Html.h1 [] [ Html.text "Board" ]
         , gameState.grid |> viewBoard
-        , Html.h1 [] [ Html.text "Moves" ]
-        , gameState |> viewMoves
         ]
