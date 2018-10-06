@@ -52,7 +52,8 @@ local StartState =
 		{0,0,0,0,0},
 		{0,0,0,0,0},
 		{-1,-1,-2,-1,-1}
-	}
+	},
+	captures = {}
 }
 
 -- Properties
@@ -158,6 +159,8 @@ local applyMove = function(state, move)
 	state.grid[move.to[1]][move.to[2]] = origPawn
 	state.grid[move.from[1]][move.from[2]] = Empty
 	
+	state.captures[#state.captures + 1] = destPawn
+	
 	-- Cards
 
 	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
@@ -176,7 +179,7 @@ local applyMove = function(state, move)
 	
 	-- Capture
 	
-	return {destPawn ~= 0 and destPawn or nil, previousNextCard}
+	return previousNextCard
 end
 
 local undoMove = function(state, move, undoData)
@@ -186,7 +189,9 @@ local undoMove = function(state, move, undoData)
 	-- Unmove
 	
 	state.grid[move.from[1]][move.from[2]] = pawn
-	state.grid[move.to[1]][move.to[2]] = undoData[1] or Empty
+	state.grid[move.to[1]][move.to[2]] = state.captures[#state.captures]
+	
+	state.captures[#state.captures] = nil
 	
 	-- Unplayer
 	
@@ -196,13 +201,13 @@ local undoMove = function(state, move, undoData)
 	
 	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
 	
-	if cards[1] == undoData[2] then
+	if cards[1] == undoData then
 		cards[1] = move.card
 	else
 		cards[2] = move.card
 	end
 	
-	state.nextCard = undoData[2]
+	state.nextCard = undoData
 end
 
 -- Debug drawing

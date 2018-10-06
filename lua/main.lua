@@ -32,15 +32,16 @@ local state = onitama.StartState
 
 state.grid =
 	{
-		{0,1,2,1,0},
+		{1,1,2,1,1},
 		{0,0,0,0,0},
 		{0,0,0,0,0},
 		{0,0,0,0,0},
-		{0,-1,-2,-1,0}
+		{-1,-1,-2,-1,-1}
 	}
 
---[[
-local res, moves = negamax.negamax(naiveValue, childrenFunc, 10, -1, 1, state)
+
+
+local res, moves = negamax.negamaxInPlace(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 6, -1, 1, state)
 print(res)
 
 print(onitama.stateToString(state))
@@ -53,42 +54,4 @@ for i = #moves,1,-1 do
 	onitama.applyMove(state,m)
 	print(onitama.stateToString(state))
 end
---]]
 
----[[
-local res, moves = negamax.negamaxInPlace(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 12, -1, 1, state)
-print(res)
-
-print(onitama.stateToString(state))
-
-for i = #moves,1,-1 do
-	
-	print "==="
-	local m = moves[i]
-	print(onitama.moveToString(moves[i]))
-	onitama.applyMove(state,m)
-	print(onitama.stateToString(state))
-end
---]]
-
---[[
-
-print(onitama.stateToString(state))
-print "===="
-
-for _,m in ipairs(onitama.validMoves(state)) do
-	print(onitama.moveToString(m))
-	print ""
-	local undoData = onitama.applyMove(state, m)
-	print(onitama.stateToString(state))
-	onitama.undoMove(state, m, undoData)
-	
-	print "---"
-	
-	print(onitama.stateToString(state))
-	
-	
-	print "===="
-end
-
---]]

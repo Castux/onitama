@@ -1,5 +1,3 @@
-local onitama = require "onitama"
-
 local function negamax(valueFunction, childrenFunction, depth, alpha, beta, node)
 	
 	local children = childrenFunction(node)
