@@ -12,8 +12,7 @@ local samePlayer = function(a,b)
 	return a * b > 0
 end
 
-local tableCopy
-tableCopy = function(t)
+local function tableCopy(t)
 
 	if type(t) ~= "table" then
 		return t
@@ -70,7 +69,7 @@ local hasMaster = function(state,player)
 	return false
 end
 
-local winner = function(state)
+local getWinner = function(state)
 	
 	if state.grid[1][3] == Bottom * Master then
 		return Bottom
@@ -113,6 +112,10 @@ local validMoves = function(state)
 	
 	local res = {}
 	
+	if getWinner(state) then
+		return res
+	end
+	
 	local player = state.currentPlayer
 	local cards = player == Top and state.topCards or state.bottomCards
 	
@@ -145,7 +148,7 @@ local validMoves = function(state)
 	return res
 end
 
-local applyMove = function(state,move)
+local applyMove = function(state, move)
 	
 	local destPawn = state.grid[move.to[1]][move.to[2]]
 	local origPawn = state.grid[move.from[1]][move.from[2]]
@@ -156,15 +159,15 @@ local applyMove = function(state,move)
 	state.grid[move.from[1]][move.from[2]] = Empty
 	
 	-- Cards
-	
+
 	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
-	for i,c in ipairs(cards) do
-		if c == move.card then
-			cards[i] = state.nextCard
-			break
-		end
+	if cards[1] == move.card then
+		cards[1] = state.nextCard
+	else
+		cards[2] = state.nextCard
 	end
 	
+	local previousNextCard = state.nextCard
 	state.nextCard = move.card
 	
 	-- Player
@@ -173,9 +176,33 @@ local applyMove = function(state,move)
 	
 	-- Capture
 	
-	if destPawn ~= 0 then
-		return destPawn
+	return {destPawn ~= 0 and destPawn or nil, previousNextCard}
+end
+
+local undoMove = function(state, move, undoData)
+	
+	local pawn = state.grid[move.to[1]][move.to[2]]
+	
+	-- Unmove
+	
+	state.grid[move.from[1]][move.from[2]] = pawn
+	state.grid[move.to[1]][move.to[2]] = undoData[1] or Empty
+	
+	-- Unplayer
+	
+	state.currentPlayer = -state.currentPlayer
+	
+	-- Uncard
+	
+	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
+	
+	if cards[1] == undoData[2] then
+		cards[1] = move.card
+	else
+		cards[2] = move.card
 	end
+	
+	state.nextCard = undoData[2]
 end
 
 -- Debug drawing
@@ -200,7 +227,7 @@ local gridToString = function(grid)
 end
 
 local stateToString = function(state)
-	local w = winner(state)
+	local w = getWinner(state)
 	
 	return
 		table.concat(state.topCards, ",") .. 
@@ -221,15 +248,18 @@ local moveToString = function(move)
 end
 
 
-print(stateToString(StartState))
-print "===="
-
-for _,m in ipairs(validMoves(StartState)) do
-	print(moveToString(m))
-	print ""
-	local child = tableCopy(StartState)
-	applyMove(child,m)
-	print(stateToString(child))
-	
-	print "===="
-end
+return
+{
+	Cards = Cards,
+	StartState = StartState,
+	samePlayer = samePlayer,
+	Top = Top,
+	Bottom = Bottom,
+	getWinner = getWinner,
+	validMoves = validMoves,
+	applyMove = applyMove,
+	undoMove = undoMove,
+	copyState = tableCopy,
+	stateToString = stateToString,
+	moveToString = moveToString
+}
