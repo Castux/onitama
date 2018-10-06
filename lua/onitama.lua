@@ -53,7 +53,8 @@ local StartState =
 		{0,0,0,0,0},
 		{-1,-1,-2,-1,-1}
 	},
-	captures = {}
+	captures = {},
+	received = {}
 }
 
 -- Properties
@@ -170,19 +171,15 @@ local applyMove = function(state, move)
 		cards[2] = state.nextCard
 	end
 	
-	local previousNextCard = state.nextCard
+	state.received[#state.received + 1] = state.nextCard	
 	state.nextCard = move.card
 	
 	-- Player
 	
 	state.currentPlayer = -state.currentPlayer
-	
-	-- Capture
-	
-	return previousNextCard
 end
 
-local undoMove = function(state, move, undoData)
+local undoMove = function(state, move)
 	
 	local pawn = state.grid[move.to[1]][move.to[2]]
 	
@@ -201,13 +198,16 @@ local undoMove = function(state, move, undoData)
 	
 	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
 	
-	if cards[1] == undoData then
+	local received = state.received[#state.received]
+	state.received[#state.received] = nil
+	
+	if cards[1] == received then
 		cards[1] = move.card
 	else
 		cards[2] = move.card
 	end
 	
-	state.nextCard = undoData
+	state.nextCard = received
 end
 
 -- Debug drawing

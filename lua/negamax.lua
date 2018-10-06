@@ -46,11 +46,11 @@ local function negamaxInPlace(valueFunction, movesFunction, applyMove, undoMove,
 	
 	for _,move in ipairs(moves) do
 		
-		local undoData = applyMove(node, move)
+		applyMove(node, move)
 		
 		local childValue, nextMoves = negamaxInPlace(valueFunction, movesFunction, applyMove, undoMove, depth - 1, -beta, -alpha, node)
 		
-		undoMove(node, move, undoData)
+		undoMove(node, move)
 
 		childValue = -childValue
 		nextMoves[#nextMoves + 1] = move
