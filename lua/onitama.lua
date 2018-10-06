@@ -34,7 +34,18 @@ local Cards =
 	Crab = {{-1,0},{0,-2},{0,2}},
 	Monkey = {{-1,-1},{-1,1},{1,-1},{1,1}},
 	Crane = {{-1,0},{1,-1},{1,1}},
-	Dragon = {{-1,-2},{-1,2},{1,-1},{1,1}}
+	Dragon = {{-1,-2},{-1,2},{1,-1},{1,1}},
+	Elephant = {{-1,-1},{-1,1},{0,-1},{0,1}},
+	Mantis = {{-1,-1},{-1,1},{0,1}},
+	Boar = {{-1,0},{0,-1},{0,1}},
+	Frog = {{-1,-1},{0,-2},{1,1}},
+	Goose = {{-1,-1},{0,-1},{0,1},{1,1}},
+	Horse = {{-1,0},{0,-1},{1,0}},
+	Eel = {{-1,-1},{0,1},{1,-1}},
+	Rabbit = {{-1,1},{0,2},{1,-1}},
+	Rooster = {{-1,1},{0,-1},{0,1},{1,-1}},
+	Ox = {{-1,0},{0,1},{1,0}},
+	Cobra = {{-1,1},{0,-1},{1,1}}
 }
 
 -- State definition
@@ -42,8 +53,8 @@ local Cards =
 local StartState =
 {
 	topCards = {"Tiger", "Crab"},
-	bottomCards = {"Monkey", "Crane"},
-	nextCard = "Dragon",
+	bottomCards = {"Dragon", "Crane"},
+	nextCard = "Monkey",
 	currentPlayer = Bottom,
 	grid =
 	{
