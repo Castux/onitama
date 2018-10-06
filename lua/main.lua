@@ -125,25 +125,48 @@ for i = #moves,1,-1 do
 end
 --]]
 
-for i,cards in ipairs(cardCombinations()) do
+local function endings()
 
-	local state = onitama.copyState(onitama.StartState)
-	state.grid =
-		{
-			{0,0,2,0,0},
-			{0,0,0,0,0},
-			{0,0,0,0,0},
-			{0,0,0,0,0},
-			{0,0,-2,0,0}
-		}
+	local fp = io.open("endings10.csv", "w")
+	
+	local w,l,d = 0,0,0
 
-	state.topCards[1] = cards[1]
-	state.topCards[2] = cards[2]
-	state.bottomCards[1] = cards[3]
-	state.bottomCards[2] = cards[4]
-	state.nextCard = cards[5]
+	for i,cards in ipairs(cardCombinations()) do
+
+		local state = onitama.copyState(onitama.StartState)
+		state.grid =
+			{
+				{0,0,2,0,0},
+				{0,0,0,0,0},
+				{0,0,0,0,0},
+				{0,0,0,0,0},
+				{0,0,-2,0,0}
+			}
+
+		state.topCards[1] = cards[1]
+		state.topCards[2] = cards[2]
+		state.bottomCards[1] = cards[3]
+		state.bottomCards[2] = cards[4]
+		state.nextCard = cards[5]
+		
+		local score,move = negamax.negamax(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 10, -100, 100, state)
+		
+		if score > 0 then
+			w = w + 1
+		elseif score == 0 then
+			d = d + 1
+		else
+			l = l + 1
+		end
+		
+		fp:write(table.concat(cards, ","), ",", score, "\n")
+		
+		if i % 1000 == 0 then
+			print("Win, lose, draw:", w,l,d, w/i, l/i, d/i)
+		end
+	end
 	
-	local score,moves = negamax.negamaxInPlace(smart, onitama.validMoves, onitama.applyMove, onitama.undoMove, 6, -100, 100, state)
-	
-	print(i, table.concat(cards, ","), score, onitama.moveToString(moves[#moves]))
+	fp:close()
 end
+
+endings()
