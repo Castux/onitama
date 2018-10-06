@@ -28,6 +28,31 @@ local function naiveValue(state)
 	end
 end
 
+local function pawnDifference(state)
+	
+	local diff = 0
+	for _,line in ipairs(state.grid) do
+		for _,cell in ipairs(line) do
+			if cell ~= 0 then
+				diff = diff + (onitama.samePlayer(cell, state.currentPlayer) and 1 or -1)
+			end
+		end		
+	end
+	
+	return diff
+end
+
+
+local function smart(state)
+	
+	local naive = naiveValue(state)
+	if naive ~= 0 then
+		return naive * 100
+	end
+	
+	return pawnDifference(state)
+end
+
 local state = onitama.StartState
 
 state.grid =
@@ -41,7 +66,7 @@ state.grid =
 
 
 
-local res, moves = negamax.negamaxInPlace(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 6, -1, 1, state)
+local res, moves = negamax.negamaxInPlace(smart, onitama.validMoves, onitama.applyMove, onitama.undoMove, 10, -100, 100, state)
 print(res)
 
 print(onitama.stateToString(state))
