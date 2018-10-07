@@ -96,43 +96,36 @@ local function smart(state)
 	
 	return pawnDifference(state)
 end
---[[
-local state = onitama.StartState
 
-state.grid =
-	{
-		{0,0,2,0,0},
-		{0,0,0,0,0},
-		{0,0,0,0,0},
-		{0,0,0,0,0},
-		{0,0,-2,0,0}
-	}
+function oneSolve()
+
+	local state = onitama.StartState
+	local fp = io.open("oneSolve.csv", "w")
 
 
-
-local res, moves = negamax.negamaxInPlace(smart, onitama.validMoves, onitama.applyMove, onitama.undoMove, 12, -100, 100, state)
-print(res)
-
-print(onitama.stateToString(state))
-
-for i = #moves,1,-1 do
+	for d = 1,100 do
+		local before = os.time()
+		local res, move = negamax.negamax(smart, onitama.validMoves, onitama.applyMove, onitama.undoMove, d, -100, 100, state)
+		local after = os.time()
+		
+		fp:write(d, ",", after-before, ",", res, ",", onitama.moveToString(move), "\n")
+		fp:flush()
+		
+		print(d, after-before, res, onitama.moveToString(move))
+	end
 	
-	print "==="
-	local m = moves[i]
-	print(onitama.moveToString(moves[i]))
-	onitama.applyMove(state,m)
-	print(onitama.stateToString(state))
+	fp:close()
 end
---]]
 
 local function endings()
 
 	local fp = io.open("endings10.csv", "w")
 	
 	local w,l,d = 0,0,0
-
-	for i,cards in ipairs(cardCombinations()) do
-
+	local combis = cardCombinations()
+	for i = 1,#combis do
+	
+		local cards = combis[i]
 		local state = onitama.copyState(onitama.StartState)
 		state.grid =
 			{
@@ -149,7 +142,7 @@ local function endings()
 		state.bottomCards[2] = cards[4]
 		state.nextCard = cards[5]
 		
-		local score,move = negamax.negamax(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 10, -100, 100, state)
+		local score,move = negamax.negamax(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 10, -1, 1, state)
 		
 		if score > 0 then
 			w = w + 1
@@ -169,4 +162,41 @@ local function endings()
 	fp:close()
 end
 
-endings()
+local function beginings()
+	local fp = io.open("beginings6.csv", "w")
+	
+	local w,l,d = 0,0,0
+	local combis = cardCombinations()
+	for i = 1,#combis do
+	
+		local cards = combis[i]
+		local state = onitama.copyState(onitama.StartState)
+
+		state.topCards[1] = cards[1]
+		state.topCards[2] = cards[2]
+		state.bottomCards[1] = cards[3]
+		state.bottomCards[2] = cards[4]
+		state.nextCard = cards[5]
+		
+		local score,move = negamax.negamax(smart, onitama.validMoves, onitama.applyMove, onitama.undoMove, 6, -100, 100, state)
+		
+		if score > 0 then
+			w = w + 1
+		elseif score == 0 then
+			d = d + 1
+		else
+			l = l + 1
+		end
+		
+		fp:write(table.concat(cards, ","), ",", score, "\n")
+		fp:flush()
+		
+		if i % 10 == 0 then
+			print("Win, lose, draw:", w,l,d, w/i, l/i, d/i)
+		end
+	end
+	
+	fp:close()
+end
+
+beginings()
