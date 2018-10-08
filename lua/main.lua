@@ -163,7 +163,7 @@ local function endings()
 end
 
 local function beginings()
-	local fp = io.open("beginings6.csv", "w")
+	local fp = io.open("beginings7-naive.csv", "w")
 	
 	local w,l,d = 0,0,0
 	local combis = cardCombinations()
@@ -178,7 +178,7 @@ local function beginings()
 		state.bottomCards[2] = cards[4]
 		state.nextCard = cards[5]
 		
-		local score,move = negamax.negamax(smart, onitama.validMoves, onitama.applyMove, onitama.undoMove, 6, -100, 100, state)
+		local score,move = negamax.negamax(naiveValue, onitama.validMoves, onitama.applyMove, onitama.undoMove, 7, -1, 1, state)
 		
 		if score > 0 then
 			w = w + 1
