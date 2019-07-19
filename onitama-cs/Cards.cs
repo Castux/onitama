@@ -19,7 +19,7 @@ namespace Onitama
 			return row >= 0 && row < 5 && col >= 0 && col < 5;
 		}
 
-		public int DestinationBit(int from, bool topPlayer)
+		public int Destination(int from, bool topPlayer)
 		{
 			var row = from / 5;
 			var col = from % 5;
@@ -30,8 +30,7 @@ namespace Onitama
 			if (!ValidIndex(row, col))
 				return 0;
 
-			var to = row * 5 + col;
-			return 1 << to;
+			return row * 5 + col;
 		}
 	}
 
@@ -66,7 +65,7 @@ namespace Onitama
 		public Offset[] Offsets;
 
 		// Precomputed destinations, indexed by player and origin cell
-		public int[,][] destinations;
+		public byte[,][] destinations;
 
 		public Card(string name, int[] offsets)
 		{
@@ -79,16 +78,16 @@ namespace Onitama
 				Offsets[i / 2] = offset;
 			}
 
-			destinations = new int[2, 25][];
+			destinations = new byte[2, 25][];
 			for (int player = 0; player < 2; player++)
 			{
 				for (int from = 0; from < 25; from++)
 				{
-					var tmp = new List<int>();
+					var tmp = new List<byte>();
 
 					for (int i = 0; i < Offsets.Length; i++)
 					{
-						var d = Offsets[i].DestinationBit(from, topPlayer: player == (int)Player.Top);
+						var d = (byte)Offsets[i].Destination(from, topPlayer: player == (int)Player.Top);
 						if (d != 0)
 							tmp.Add(d);
 					}

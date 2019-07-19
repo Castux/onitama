@@ -101,16 +101,17 @@ namespace Onitama
 
 		private void ValidMoves(int pieces, byte from, byte card, List<Move> outMoves)
 		{
-			// TODO: check if storing the index is not better than the bitboard (or both?)
 			var destinations = Card.Definitions[card].destinations[(int)Player, from];
 
-			foreach (var destBit in destinations)
+			foreach (var dest in destinations)
 			{
+				var destBit = 1 << dest;
+
 				// As long as we don't have a piece there
 
 				if ((pieces & destBit) == 0)
 				{
-					outMoves.Add(new Move(card, from, Board.BitToPos(destBit)));
+					outMoves.Add(new Move(card, from, dest));
 				}
 			}
 		}
