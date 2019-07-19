@@ -138,15 +138,7 @@ namespace Onitama
 
 		public static CardState Default()
 		{
-			return new CardState(0, 2, 1, 3, 4);
-		}
-
-		public override string ToString()
-		{
-			return Card.Definitions[topCard1].Name + " " + Card.Definitions[topCard2].Name + "\n" +
-				Card.Definitions[bottomCard1].Name + " " + Card.Definitions[bottomCard2].Name + "\n" +
-				'[' + Card.Definitions[nextCard].Name + ']';
-
+			return new CardState(0, 1, 2, 3, 4);
 		}
 
 		public CardState Play(byte card, out byte receivedCard)

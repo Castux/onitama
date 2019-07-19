@@ -41,8 +41,26 @@ namespace Onitama
 			{
 				Board = Board.InitialBoard(),
 				Cards = CardState.Default(),
-				Player = Player.Top
+				Player = Player.Bottom
 			};
+		}
+
+		public override string ToString()
+		{
+			var res = "";
+
+			res += Card.Definitions[Cards.topCard1].Name + " " + Card.Definitions[Cards.topCard2].Name;
+			if (Player == Player.Top)
+				res += " [" + Card.Definitions[Cards.nextCard].Name + "]";
+
+			res += '\n';
+			res += Board;
+
+			res += Card.Definitions[Cards.bottomCard1].Name + " " + Card.Definitions[Cards.bottomCard2].Name;
+			if (Player == Player.Bottom)
+				res += " [" + Card.Definitions[Cards.nextCard].Name + "]";
+
+			return res;
 		}
 
 		public void ValidMoves(List<Move> outMoves)

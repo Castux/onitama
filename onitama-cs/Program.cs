@@ -7,8 +7,7 @@ public static class Program
 	static public void Main()
 	{
 		var game = GameState.Default();
-		Console.WriteLine(game.Cards);
-		Console.WriteLine(game.Board);
+		Console.WriteLine(game);
 
 		var moves = new List<Move>();
 		game.ValidMoves(moves);
