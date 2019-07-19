@@ -141,7 +141,7 @@ namespace Onitama
 			return new CardState(0, 1, 2, 3, 4);
 		}
 
-		public CardState Play(byte card, out byte receivedCard)
+		public CardState Move(byte card, out byte receivedCard)
 		{
 			receivedCard = nextCard;
 

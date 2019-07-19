@@ -118,7 +118,7 @@ namespace Onitama
 		{
 			return new GameState
 			{
-				Cards = Cards.Play(move.card, out receivedCard),
+				Cards = Cards.Move(move.card, out receivedCard),
 				Board = Board.Move(Player, move.from, move.to, out capture),
 				Player = Player.Opponent()
 			};
