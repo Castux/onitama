@@ -82,9 +82,9 @@
 			topDestinations = new int[25, Offsets.Length];
 			bottomDestinations = new int[25, Offsets.Length];
 
-			for(int from = 0; from < 25; from++)
+			for (int from = 0; from < 25; from++)
 			{
-				for(int i = 0; i < Offsets.Length; i++)
+				for (int i = 0; i < Offsets.Length; i++)
 				{
 					topDestinations[from, i] = Offsets[i].DestinationBit(from, true);
 					bottomDestinations[from, i] = Offsets[i].DestinationBit(from, false);
@@ -93,5 +93,49 @@
 		}
 	}
 
+	public struct CardState
+	{
+		// Indices to the Card.Definitions array
 
+		public readonly byte topCard1;
+		public readonly byte topCard2;
+		public readonly byte bottomCard1;
+		public readonly byte bottomCard2;
+		public readonly byte nextCard;
+
+		public CardState(byte tc1, byte tc2, byte bc1, byte bc2, byte nc)
+		{
+			topCard1 = tc1;
+			topCard2 = tc2;
+			bottomCard1 = bc1;
+			bottomCard2 = bc2;
+			nextCard = nc;
+		}
+
+		public CardState Play(byte card, out byte receivedCard)
+		{
+			receivedCard = nextCard;
+
+			if (topCard1 == card)
+			{
+				return new CardState(nextCard, topCard2, bottomCard1, bottomCard2, topCard1);
+			}
+			else if (topCard2 == card)
+			{
+				return new CardState(topCard1, nextCard, bottomCard1, bottomCard2, topCard2);
+			}
+			else if (bottomCard1 == card)
+			{
+				return new CardState(topCard1, topCard2, nextCard, bottomCard2, bottomCard1);
+			}
+			else if (bottomCard2 == card)
+			{
+				return new CardState(topCard1, topCard2, bottomCard1, nextCard, bottomCard2);
+			}
+			else
+			{
+				throw new System.Exception("Invalid card move");
+			}
+		}
+	}
 }

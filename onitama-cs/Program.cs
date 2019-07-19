@@ -3,9 +3,9 @@ using Onitama;
 
 public static class Program
 {
-    static public void Main()
-    {
-        var b = Board.InitialBoard();
+	static public void Main()
+	{
+		var b = Board.InitialBoard();
 
 		b = b.Move(Player.Top, 2, 21, out Piece? capture);
 
@@ -13,6 +13,13 @@ public static class Program
 		Console.WriteLine(capture.HasValue ? "capture" : "not capture");
 
 		var card = Card.Definitions[3];
-		Console.WriteLine(card.Name);
-    }
+
+		Console.WriteLine();
+
+		GameState g = new GameState();
+
+		var g2 = g;
+
+
+	}
 }
