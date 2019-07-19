@@ -63,9 +63,7 @@ local StartState =
 		{0,0,0,0,0},
 		{0,0,0,0,0},
 		{-1,-1,-2,-1,-1}
-	},
-	captures = {},
-	received = {}
+	}
 }
 
 -- Properties
@@ -171,8 +169,6 @@ local applyMove = function(state, move)
 	state.grid[move.to[1]][move.to[2]] = origPawn
 	state.grid[move.from[1]][move.from[2]] = Empty
 	
-	state.captures[#state.captures + 1] = destPawn
-	
 	-- Cards
 
 	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
@@ -182,25 +178,27 @@ local applyMove = function(state, move)
 		cards[2] = state.nextCard
 	end
 	
-	state.received[#state.received + 1] = state.nextCard	
+	local cardReceived = state.nextCard
 	state.nextCard = move.card
 	
 	-- Player
 	
 	state.currentPlayer = -state.currentPlayer
+	
+	-- Return info for reversibility
+	
+	return destPawn, cardReceived
 end
 
-local undoMove = function(state, move)
+local undoMove = function(state, move, capture, received)
 	
 	local pawn = state.grid[move.to[1]][move.to[2]]
 	
 	-- Unmove
 	
 	state.grid[move.from[1]][move.from[2]] = pawn
-	state.grid[move.to[1]][move.to[2]] = state.captures[#state.captures]
-	
-	state.captures[#state.captures] = nil
-	
+	state.grid[move.to[1]][move.to[2]] = capture
+
 	-- Unplayer
 	
 	state.currentPlayer = -state.currentPlayer
@@ -208,9 +206,6 @@ local undoMove = function(state, move)
 	-- Uncard
 	
 	local cards = state.currentPlayer == Top and state.topCards or state.bottomCards
-	
-	local received = state.received[#state.received]
-	state.received[#state.received] = nil
 	
 	if cards[1] == received then
 		cards[1] = move.card

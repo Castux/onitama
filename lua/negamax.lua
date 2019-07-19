@@ -11,11 +11,11 @@ local function negamaxInPlace(valueFunction, movesFunction, applyMove, undoMove,
 	
 	for _,move in ipairs(moves) do
 		
-		applyMove(node, move)
+		local capture, cardReceived = applyMove(node, move)
 		
 		local childValue = negamaxInPlace(valueFunction, movesFunction, applyMove, undoMove, depth - 1, -beta, -alpha, node)
 		
-		undoMove(node, move)
+		undoMove(node, move, capture, cardReceived)
 
 		childValue = -childValue
 		
