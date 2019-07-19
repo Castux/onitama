@@ -22,8 +22,10 @@ namespace Onitama
 		private CardState cards;
 		private Player player;
 
-		public IEnumerable<Move> ValidMoves()
+		public void ValidMoves(List<Move> outMoves)
 		{
+            outMoves.Clear();
+
 			var pieces = board.PlayerPiecesBitboard(player);
 			
 			byte card1, card2;
@@ -49,21 +51,14 @@ namespace Onitama
 					continue;
 				}
 
-				// Check moves from both cards
+                // Check moves from both cards
 
-				foreach (var move in ValidMoves(pieces, from, card1))
-				{
-					yield return move;
-				}
-
-				foreach (var move in ValidMoves(pieces, from, card2))
-				{
-					yield return move;
-				}
+                ValidMoves(pieces, from, card1, outMoves);
+                ValidMoves(pieces, from, card2, outMoves);
 			}
 		}
 
-		private IEnumerable<Move> ValidMoves(int pieces, byte from, byte card)
+		private void ValidMoves(int pieces, byte from, byte card, List<Move> outMoves)
 		{
 			var destinations = Card.Definitions[card].destinations[(int)player, from];
 
@@ -73,7 +68,7 @@ namespace Onitama
 
 				if ((pieces & destBit) == 0)
 				{
-					yield return new Move(card, from, Board.BitToPos(destBit));
+                    outMoves.Add(new Move(card, from, Board.BitToPos(destBit)));
 				}
 			}
 		}
