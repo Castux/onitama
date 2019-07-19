@@ -158,11 +158,16 @@ namespace Onitama
 			if (!ValidIndex(from) || !ValidIndex(to))
 				return false;
 
-			var ownPieces = GetBitboard(Piece.Master, player) | GetBitboard(Piece.Student, player);
+			var ownPieces = PlayerPiecesBitboard(player);
 			var hasFrom = (ownPieces & (1 << from)) != 0;
 			var hasTo = (ownPieces & (1 << to)) != 0;
 
 			return hasFrom && !hasTo;
+		}
+
+		public int PlayerPiecesBitboard(Player player)
+		{
+			return GetBitboard(Piece.Master, player) | GetBitboard(Piece.Student, player);
 		}
 
 		private int GetBitboard(Piece piece, Player player)
