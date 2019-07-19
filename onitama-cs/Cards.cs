@@ -105,10 +105,28 @@
 
 		public CardState(byte tc1, byte tc2, byte bc1, byte bc2, byte nc)
 		{
-			topCard1 = tc1;
-			topCard2 = tc2;
-			bottomCard1 = bc1;
-			bottomCard2 = bc2;
+			if (tc1 < tc2)
+			{
+				topCard1 = tc1;
+				topCard2 = tc2;
+			}
+			else
+			{
+				topCard1 = tc2;
+				topCard2 = tc1;
+			}
+
+			if (bc1 < bc2)
+			{
+				bottomCard1 = bc1;
+				bottomCard2 = bc2;
+			}
+			else
+			{
+				bottomCard1 = bc2;
+				bottomCard2 = bc1;
+			}
+
 			nextCard = nc;
 		}
 

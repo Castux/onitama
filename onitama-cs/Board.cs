@@ -24,17 +24,22 @@ namespace Onitama
 		private readonly int topMaster;
 		private readonly int bottomMaster;
 
+		public Board(int tS, int bS, int tM, int bM)
+		{
+			topStudents = tS;
+			bottomStudents = bS;
+			bottomMaster = bM;
+			topMaster = tM;
+		}
+
 		public static Board InitialBoard()
 		{
-			var board = new Board
-			{
-				bottomStudents = 0b11011_00000_00000_00000_00000,
-				topStudents = 0b00000_00000_00000_00000_11011,
-				bottomMaster = 0b00100_00000_00000_00000_00000,
-				topMaster = 0b00000_00000_00000_00000_00100
-			};
-
-			return board;
+			return new Board(
+				tS: 0b00000_00000_00000_00000_11011,
+				bS: 0b11011_00000_00000_00000_00000,
+				tM: 0b00000_00000_00000_00000_00100,
+				bM: 0b00100_00000_00000_00000_00000
+			);
 		}
 
 		public int TopStudentCount()
@@ -135,13 +140,12 @@ namespace Onitama
 
 		private Board RawMove(int fromBit, int toBit)
 		{
-			return new Board
-			{
-				topMaster = MoveBitBoard(topMaster, fromBit, toBit),
-				bottomMaster = MoveBitBoard(bottomMaster, fromBit, toBit),
-				topStudents = MoveBitBoard(topStudents, fromBit, toBit),
-				bottomStudents = MoveBitBoard(bottomStudents, fromBit, toBit)
-			};
+			return new Board(
+				tM: MoveBitBoard(topMaster, fromBit, toBit),
+				bM: MoveBitBoard(bottomMaster, fromBit, toBit),
+				tS: MoveBitBoard(topStudents, fromBit, toBit),
+				bS: MoveBitBoard(bottomStudents, fromBit, toBit)
+			);
 		}
 
 		private bool ValidIndex(int i)
@@ -187,4 +191,6 @@ namespace Onitama
 				return Player.Top;
 		}
 	}
+
+
 }
