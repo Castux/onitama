@@ -83,25 +83,31 @@ namespace Onitama
 
 		public override string ToString()
 		{
-			var chars = new char[25];
+			var res = "  abcde\n";
 
-			for(int i = 0; i < 25; i++)
+			for (int i = 0; i < 25; i++)
 			{
+				if (i % 5 == 0)
+					res += (i / 5 + 1) + " ";
+
 				var bit = 1 << i;
 
 				if ((topMaster & bit) != 0)
-					chars[i] = 'T';
+					res += 'T';
 				else if ((topStudents & bit) != 0)
-					chars[i] = 't';
+					res += 't';
 				else if ((bottomMaster & bit) != 0)
-					chars[i] = 'B';
+					res += 'B';
 				else if ((bottomStudents & bit) != 0)
-					chars[i] = 'b';
+					res += 'b';
 				else
-					chars[i] = '.';
+					res += '.';
+
+				if (i % 5 == 4)
+					res += '\n';
 			}
 
-			return new string(chars);
+			return res;
 		}
 
 		private static int BitCount(int bitBoard)
@@ -118,7 +124,7 @@ namespace Onitama
 
 		public static byte BitToPos(int bitBoard)
 		{
-			for(byte i = 0; i < 25; i++)
+			for (byte i = 0; i < 25; i++)
 			{
 				if (bitBoard % 2 > 0)
 					return i;
@@ -173,7 +179,7 @@ namespace Onitama
 
 		private int GetBitboard(Piece piece, Player player)
 		{
-			if(player == Player.Top)
+			if (player == Player.Top)
 			{
 				if (piece == Piece.Master)
 					return topMaster;

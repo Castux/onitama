@@ -14,35 +14,58 @@ namespace Onitama
 			this.from = from;
 			this.to = to;
 		}
+
+		public override string ToString()
+		{
+			return Card.Definitions[card].Name + " " + CellToCoords(from) + " " + CellToCoords(to);
+		}
+
+		public static string CellToCoords(byte cell)
+		{
+			var col = cell % 5;
+			var row = cell / 5 + 1;
+
+			return "" + (char)((byte)'a' + col) + row;
+		}
 	}
 
 	public struct GameState
 	{
-		private Board board;
-		private CardState cards;
-		private Player player;
+		public Board Board { get; private set; }
+		public CardState Cards { get; private set; }
+		public Player Player { get; private set; }
+
+		public static GameState Default()
+		{
+			return new GameState
+			{
+				Board = Board.InitialBoard(),
+				Cards = CardState.Default(),
+				Player = Player.Top
+			};
+		}
 
 		public void ValidMoves(List<Move> outMoves)
 		{
-            outMoves.Clear();
+			outMoves.Clear();
 
-			var pieces = board.PlayerPiecesBitboard(player);
-			
+			var pieces = Board.PlayerPiecesBitboard(Player);
+
 			byte card1, card2;
 
-			if(player == Player.Top)
+			if (Player == Player.Top)
 			{
-				card1 = cards.topCard1;
-				card2 = cards.topCard2;
+				card1 = Cards.topCard1;
+				card2 = Cards.topCard2;
 			}
 			else
 			{
-				card1 = cards.bottomCard1;
-				card2 = cards.bottomCard2;
+				card1 = Cards.bottomCard1;
+				card2 = Cards.bottomCard2;
 			}
 
 			int fromBit = 1;
-			for (byte from = 0 ; from < 25 ; from++, fromBit <<= 1)
+			for (byte from = 0; from < 25; from++, fromBit <<= 1)
 			{
 				// Skip if we don't have a piece here
 
@@ -51,16 +74,16 @@ namespace Onitama
 					continue;
 				}
 
-                // Check moves from both cards
+				// Check moves from both cards
 
-                ValidMoves(pieces, from, card1, outMoves);
-                ValidMoves(pieces, from, card2, outMoves);
+				ValidMoves(pieces, from, card1, outMoves);
+				ValidMoves(pieces, from, card2, outMoves);
 			}
 		}
 
 		private void ValidMoves(int pieces, byte from, byte card, List<Move> outMoves)
 		{
-			var destinations = Card.Definitions[card].destinations[(int)player, from];
+			var destinations = Card.Definitions[card].destinations[(int)Player, from];
 
 			foreach (var destBit in destinations)
 			{
@@ -68,7 +91,7 @@ namespace Onitama
 
 				if ((pieces & destBit) == 0)
 				{
-                    outMoves.Add(new Move(card, from, Board.BitToPos(destBit)));
+					outMoves.Add(new Move(card, from, Board.BitToPos(destBit)));
 				}
 			}
 		}

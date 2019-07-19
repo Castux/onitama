@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Onitama
 {
@@ -133,6 +134,19 @@ namespace Onitama
 			}
 
 			nextCard = nc;
+		}
+
+		public static CardState Default()
+		{
+			return new CardState(0, 2, 1, 3, 4);
+		}
+
+		public override string ToString()
+		{
+			return Card.Definitions[topCard1].Name + " " + Card.Definitions[topCard2].Name + "\n" +
+				Card.Definitions[bottomCard1].Name + " " + Card.Definitions[bottomCard2].Name + "\n" +
+				'[' + Card.Definitions[nextCard].Name + ']';
+
 		}
 
 		public CardState Play(byte card, out byte receivedCard)
