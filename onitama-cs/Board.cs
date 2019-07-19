@@ -116,6 +116,19 @@ namespace Onitama
 			return count;
 		}
 
+		public static byte BitToPos(int bitBoard)
+		{
+			for(byte i = 0; i < 25; i++)
+			{
+				if (bitBoard % 2 > 0)
+					return i;
+
+				bitBoard >>= 1;
+			}
+
+			return 0;
+		}
+
 		private int MoveBitBoard(int bitboard, int fromBit, int toBit)
 		{
 			// Extract bit
@@ -151,18 +164,6 @@ namespace Onitama
 		private bool ValidIndex(int i)
 		{
 			return i >= 0 && i < 25;
-		}
-
-		public bool ValidMove(Player player, int from, int to)
-		{
-			if (!ValidIndex(from) || !ValidIndex(to))
-				return false;
-
-			var ownPieces = PlayerPiecesBitboard(player);
-			var hasFrom = (ownPieces & (1 << from)) != 0;
-			var hasTo = (ownPieces & (1 << to)) != 0;
-
-			return hasFrom && !hasTo;
 		}
 
 		public int PlayerPiecesBitboard(Player player)

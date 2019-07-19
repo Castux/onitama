@@ -1,4 +1,6 @@
-﻿namespace Onitama
+﻿using System.Collections.Generic;
+
+namespace Onitama
 {
 	public struct Offset
 	{
@@ -62,15 +64,13 @@
 		public string Name;
 		public Offset[] Offsets;
 
-		// Precomputed, indexed by origin cell
-		public int[,] topDestinations;
-		public int[,] bottomDestinations;
+		// Precomputed destinations, indexed by player and origin cell
+		public int[,][] destinations;
 
 		public Card(string name, int[] offsets)
 		{
 			Name = name;
 			Offsets = new Offset[offsets.Length / 2];
-
 
 			for (int i = 0; i < offsets.Length; i += 2)
 			{
@@ -78,16 +78,21 @@
 				Offsets[i / 2] = offset;
 			}
 
-
-			topDestinations = new int[25, Offsets.Length];
-			bottomDestinations = new int[25, Offsets.Length];
-
-			for (int from = 0; from < 25; from++)
+			destinations = new int[2, 25][];
+			for (int player = 0; player < 2; player++)
 			{
-				for (int i = 0; i < Offsets.Length; i++)
+				for (int from = 0; from < 25; from++)
 				{
-					topDestinations[from, i] = Offsets[i].DestinationBit(from, true);
-					bottomDestinations[from, i] = Offsets[i].DestinationBit(from, false);
+					var tmp = new List<int>();
+
+					for (int i = 0; i < Offsets.Length; i++)
+					{
+						var d = Offsets[i].DestinationBit(from, topPlayer: player == (int)Player.Top);
+						if (d != 0)
+							tmp.Add(d);
+					}
+
+					destinations[player, from] = tmp.ToArray();
 				}
 			}
 		}

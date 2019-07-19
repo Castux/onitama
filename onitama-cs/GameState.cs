@@ -7,6 +7,13 @@ namespace Onitama
 		byte card;
 		byte from;
 		byte to;
+
+		public Move(byte card, byte from, byte to)
+		{
+			this.card = card;
+			this.from = from;
+			this.to = to;
+		}
 	}
 
 	public struct GameState
@@ -17,8 +24,6 @@ namespace Onitama
 
 		public IEnumerable<Move> ValidMoves()
 		{
-
-
 			var pieces = board.PlayerPiecesBitboard(player);
 			
 			byte card1, card2;
@@ -35,7 +40,7 @@ namespace Onitama
 			}
 
 			int fromBit = 1;
-			for (int from = 0 ; from < 25 ; from++, fromBit >>= 1)
+			for (byte from = 0 ; from < 25 ; from++, fromBit <<= 1)
 			{
 				// Skip if we don't have a piece here
 
@@ -44,14 +49,33 @@ namespace Onitama
 					continue;
 				}
 
-				var destinations = Card.Definitions[card1].topDestinations;
-			//	foreach(var destBit in Card.Definitions[cards1].)
+				// Check moves from both cards
 
-				fromBit <<= 1;
+				foreach (var move in ValidMoves(pieces, from, card1))
+				{
+					yield return move;
+				}
+
+				foreach (var move in ValidMoves(pieces, from, card2))
+				{
+					yield return move;
+				}
 			}
+		}
 
+		private IEnumerable<Move> ValidMoves(int pieces, byte from, byte card)
+		{
+			var destinations = Card.Definitions[card].destinations[(int)player, from];
 
-			yield return new Move();
+			foreach (var destBit in destinations)
+			{
+				// As long as we don't have a piece there
+
+				if ((pieces & destBit) == 0)
+				{
+					yield return new Move(card, from, Board.BitToPos(destBit));
+				}
+			}
 		}
 	}
 }
