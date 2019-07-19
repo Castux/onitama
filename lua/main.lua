@@ -199,4 +199,4 @@ local function beginings()
 	fp:close()
 end
 
-beginings()
+oneSolve()
