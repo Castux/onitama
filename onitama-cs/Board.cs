@@ -14,6 +14,17 @@ namespace Onitama
 		Bottom
 	};
 
+	public static class PlayerExtensions
+	{
+		public static Player Opponent(this Player p)
+		{
+			if (p == Player.Top)
+				return Player.Bottom;
+			else
+				return Player.Top;
+		}
+	}
+
 	public struct Board
 	{
 		// Cell i is represented by (1 << i) in bitboards
@@ -69,9 +80,9 @@ namespace Onitama
 
 			// Do we capture?
 
-			if ((GetBitboard(Piece.Master, Opponent(player)) & toBit) != 0)
+			if ((GetBitboard(Piece.Master, player.Opponent()) & toBit) != 0)
 				capture = Piece.Master;
-			else if ((GetBitboard(Piece.Student, Opponent(player)) & toBit) != 0)
+			else if ((GetBitboard(Piece.Student, player.Opponent()) & toBit) != 0)
 				capture = Piece.Student;
 			else
 				capture = null;
@@ -193,14 +204,6 @@ namespace Onitama
 				else
 					return bottomStudents;
 			}
-		}
-
-		private Player Opponent(Player p)
-		{
-			if (p == Player.Top)
-				return Player.Bottom;
-			else
-				return Player.Top;
 		}
 	}
 

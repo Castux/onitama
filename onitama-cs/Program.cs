@@ -9,9 +9,17 @@ public static class Program
 		var game = GameState.Default();
 		Console.WriteLine(game);
 
+		Console.WriteLine(" ");
+
 		var moves = new List<Move>();
 		game.ValidMoves(moves);
 		foreach (var move in moves)
 			Console.WriteLine(move);
+
+		Piece? capture;
+		byte cardReceived;
+		game = game.ApplyMove(moves[3], out capture, out cardReceived);
+
+		Console.WriteLine(game);
 	}
 }

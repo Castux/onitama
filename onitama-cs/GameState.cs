@@ -4,9 +4,9 @@ namespace Onitama
 {
 	public struct Move
 	{
-		byte card;
-		byte from;
-		byte to;
+		public readonly byte card;
+		public readonly byte from;
+		public readonly byte to;
 
 		public Move(byte card, byte from, byte to)
 		{
@@ -112,6 +112,16 @@ namespace Onitama
 					outMoves.Add(new Move(card, from, Board.BitToPos(destBit)));
 				}
 			}
+		}
+
+		public GameState ApplyMove(Move move, out Piece? capture, out byte receivedCard)
+		{
+			return new GameState
+			{
+				Cards = Cards.Play(move.card, out receivedCard),
+				Board = Board.Move(Player, move.from, move.to, out capture),
+				Player = Player.Opponent()
+			};
 		}
 	}
 }
