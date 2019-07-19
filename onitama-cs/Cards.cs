@@ -2,13 +2,13 @@
 {
 	public struct Offset
 	{
-		public readonly int dx;
-		public readonly int dy;
+		public readonly int dcol;
+		public readonly int drow;
 
-		public Offset(int x, int y)
+		public Offset(int row, int col)
 		{
-			dx = x;
-			dy = y;
+			dcol = col;
+			drow = row;
 		}
 
 		public bool ValidIndex(int row, int col)
@@ -21,8 +21,8 @@
 			var row = from / 5;
 			var col = from % 5;
 
-			row += dy * (topPlayer ? -1 : 1);
-			col += dx * (topPlayer ? -1 : 1);
+			row += drow * (topPlayer ? -1 : 1);
+			col += dcol * (topPlayer ? -1 : 1);
 
 			if (!ValidIndex(row, col))
 				return 0;
