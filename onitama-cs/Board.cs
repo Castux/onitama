@@ -178,11 +178,6 @@ namespace Onitama
 			);
 		}
 
-		private bool ValidIndex(int i)
-		{
-			return i >= 0 && i < 25;
-		}
-
 		public int PlayerPiecesBitboard(Player player)
 		{
 			return GetBitboard(Piece.Master, player) | GetBitboard(Piece.Student, player);

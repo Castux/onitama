@@ -163,7 +163,7 @@ namespace Onitama
 			}
 			else
 			{
-				throw new System.Exception("Invalid card move");
+				throw new Exception("Invalid card move");
 			}
 		}
 	}

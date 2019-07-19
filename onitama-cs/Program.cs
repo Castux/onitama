@@ -16,9 +16,7 @@ public static class Program
 		foreach (var move in moves)
 			Console.WriteLine(move);
 
-		Piece? capture;
-		byte cardReceived;
-		game = game.ApplyMove(moves[3], out capture, out cardReceived);
+		game = game.ApplyMove(moves[3], out Piece? capture, out byte cardReceived);
 
 		Console.WriteLine(game);
 	}
