@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{0BB88F0C-E44F-428D-A10C-48D59A1790D8}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>onitama</RootNamespace>
+    <RootNamespace>Onitama</RootNamespace>
     <AssemblyName>onitama-cs</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Board.cs" />
+    <Compile Include="Solver.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Cards.cs" />
     <Compile Include="GameState.cs" />

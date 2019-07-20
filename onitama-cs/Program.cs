@@ -6,18 +6,31 @@ public static class Program
 {
 	static public void Main()
 	{
-		var game = GameState.Default();
-		Console.WriteLine(game);
+		var board = new Board(
+			tS: 0b00000_00000_00000_00000_11011,
+			bS: 0b11011_00000_00000_00000_00000,
+			tM: 0b00000_00000_00000_00000_00100,
+			bM: 0b00000_00000_00100_00000_00000
+		);
 
+		var cards = new CardState(6,7,0,1,2);
+		var game = new GameState(board, cards, Player.Top);
+
+		game = GameState.Default();
+
+		Console.WriteLine(game);
 		Console.WriteLine(" ");
 
-		var moves = new List<Move>();
-		game.ValidMoves(moves);
-		foreach (var move in moves)
-			Console.WriteLine(move);
+		var solver = new Solver(game, 11);
+		solver.ComputeValue();
 
-		game = game.ApplyMove(moves[3], out Piece? capture, out byte cardReceived);
+		Console.WriteLine("Total leaves visited: " + solver.LeavesVisited);
 
-		Console.WriteLine(game);
+		Console.WriteLine("Value: " + solver.Value);
+
+		foreach(var m in solver.BestMoves)
+			Console.WriteLine(m);
+
+		Console.ReadLine();
 	}
 }

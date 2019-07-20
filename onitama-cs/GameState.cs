@@ -45,6 +45,13 @@ namespace Onitama
 			};
 		}
 
+		public GameState(Board board, CardState cards, Player player)
+		{
+			Board = board;
+			Cards = cards;
+			Player = player;
+		}
+
 		public override string ToString()
 		{
 			var res = "";
@@ -63,12 +70,14 @@ namespace Onitama
 			return res;
 		}
 
-		public void ValidMoves(List<Move> outMoves)
+		public void ComputeValidMoves(List<Move> outMoves)
 		{
 			outMoves.Clear();
 
-			var pieces = Board.PlayerPiecesBitboard(Player);
+			if (Board.TopWon() || Board.BottomWon())
+				return;
 
+			var pieces = Board.PlayerPiecesBitboard(Player);
 			byte card1, card2;
 
 			if (Player == Player.Top)
