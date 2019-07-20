@@ -2,17 +2,27 @@
 
 namespace Onitama
 {
+	public enum MoveQuality
+	{
+		Unknown,
+		Win,
+		Capture,
+		Normal
+	}
+
 	public struct Move
 	{
 		public readonly byte card;
 		public readonly byte from;
 		public readonly byte to;
+		public readonly byte quality;
 
-		public Move(byte card, byte from, byte to)
+		public Move(byte card, byte from, byte to, MoveQuality quality = MoveQuality.Unknown)
 		{
 			this.card = card;
 			this.from = from;
 			this.to = to;
+			this.quality = (byte)quality;
 		}
 
 		public override string ToString()
@@ -77,7 +87,11 @@ namespace Onitama
 			if (Board.TopWon() || Board.BottomWon())
 				return;
 
-			var pieces = Board.PlayerPiecesBitboard(Player);
+			var ownMaster = Board.GetBitboard(Piece.Master, Player);
+			var ownStudents = Board.GetBitboard(Piece.Student, Player);
+			var opponentMaster = Board.GetBitboard(Piece.Master, Player.Opponent());
+			var opponentStudents = Board.GetBitboard(Piece.Student, Player.Opponent());
+
 			byte card1, card2;
 
 			if (Player == Player.Top)
@@ -96,41 +110,60 @@ namespace Onitama
 			{
 				// Skip if we don't have a piece here
 
-				if ((pieces & fromBit) == 0)
+				if (((ownMaster | ownStudents) & fromBit) == 0)
 				{
 					continue;
 				}
 
 				// Check moves from both cards
 
-				ValidMoves(pieces, from, card1, outMoves);
-				ValidMoves(pieces, from, card2, outMoves);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, outMoves);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, outMoves);
 			}
 		}
 
-		private void ValidMoves(int pieces, byte from, byte card, List<Move> outMoves)
+		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, List<Move> outMoves)
 		{
 			var destinations = Card.Definitions[card].destinations[(int)Player, from];
 
 			foreach (var dest in destinations)
 			{
+				var fromBit = 1 << from;
 				var destBit = 1 << dest;
 
-				// As long as we don't have a piece there
+				// As long as we don't have a piece there, it's valid
 
-				if ((pieces & destBit) == 0)
+				if (((ownMaster | ownStudents) & destBit) == 0)
 				{
-					outMoves.Add(new Move(card, from, dest));
+					// Check move quality
+
+					var quality = MoveQuality.Normal;
+
+					if ((opponentMaster & destBit) != 0)
+						quality = MoveQuality.Win;
+					else if ((opponentStudents & destBit) != 0)
+						quality = MoveQuality.Capture;
+
+					// Moving master to the goal is also a win!
+
+					var goalGate = Player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
+
+					if ((ownMaster & fromBit) != 0 && destBit == goalGate)
+					{
+						quality = MoveQuality.Win;
+					}
+
+					outMoves.Add(new Move(card, from, dest, quality));
 				}
 			}
 		}
 
-		public GameState ApplyMove(Move move, out Piece? capture, out byte receivedCard)
+		public GameState ApplyMove(Move move)
 		{
 			return new GameState
 			{
-				Cards = Cards.Move(move.card, out receivedCard),
-				Board = Board.Move(Player, move.from, move.to, out capture),
+				Cards = Cards.Move(move.card),
+				Board = Board.Move(move.from, move.to),
 				Player = Player.Opponent()
 			};
 		}

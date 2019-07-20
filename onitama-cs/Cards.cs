@@ -140,10 +140,8 @@ namespace Onitama
 			return new CardState(0, 1, 2, 3, 4);
 		}
 
-		public CardState Move(byte card, out byte receivedCard)
+		public CardState Move(byte card)
 		{
-			receivedCard = nextCard;
-
 			if (topCard1 == card)
 			{
 				return new CardState(nextCard, topCard2, bottomCard1, bottomCard2, topCard1);

@@ -35,6 +35,9 @@ namespace Onitama
 		private readonly int topMaster;
 		private readonly int bottomMaster;
 
+		public const int TopGateBits = 0b00000_00000_00000_00000_00100;
+		public const int BottomGateBits = 0b00100_00000_00000_00000_00000;
+
 		public Board(int tS, int bS, int tM, int bM)
 		{
 			topStudents = tS;
@@ -48,8 +51,8 @@ namespace Onitama
 			return new Board(
 				tS: 0b00000_00000_00000_00000_11011,
 				bS: 0b11011_00000_00000_00000_00000,
-				tM: 0b00000_00000_00000_00000_00100,
-				bM: 0b00100_00000_00000_00000_00000
+				tM: TopGateBits,
+				bM: BottomGateBits
 			);
 		}
 
@@ -65,19 +68,20 @@ namespace Onitama
 
 		public bool TopWon()
 		{
-			return topMaster == 0b00100_00000_00000_00000_00000 || bottomMaster == 0;
+			return topMaster == BottomGateBits || bottomMaster == 0;
 		}
 
 		public bool BottomWon()
 		{
-			return bottomMaster == 0b00000_00000_00000_00000_00100 || topMaster == 0;
+			return bottomMaster == TopGateBits || topMaster == 0;
 		}
 
-		public Board Move(Player player, int from, int to, out Piece? capture)
+		public Board Move(int from, int to)
 		{
 			int fromBit = 1 << from;
 			int toBit = 1 << to;
 
+			/*
 			// Do we capture?
 
 			if ((GetBitboard(Piece.Master, player.Opponent()) & toBit) != 0)
@@ -86,6 +90,7 @@ namespace Onitama
 				capture = Piece.Student;
 			else
 				capture = null;
+			*/
 
 			// Apply move
 
@@ -183,7 +188,7 @@ namespace Onitama
 			return GetBitboard(Piece.Master, player) | GetBitboard(Piece.Student, player);
 		}
 
-		private int GetBitboard(Piece piece, Player player)
+		public int GetBitboard(Piece piece, Player player)
 		{
 			if (player == Player.Top)
 			{

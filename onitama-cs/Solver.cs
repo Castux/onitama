@@ -54,7 +54,7 @@ namespace Onitama
 			{
 				var move = moves[i];
 
-				var childState = state.ApplyMove(move, out Piece? capture, out byte receivedCard);
+				var childState = state.ApplyMove(move);
 				var childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
 
 				if(childValue > value)

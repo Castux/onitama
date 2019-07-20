@@ -16,12 +16,12 @@ public static class Program
 		var cards = new CardState(6,7,0,1,2);
 		var game = new GameState(board, cards, Player.Top);
 
-		game = GameState.Default();
+		//game = GameState.Default();
 
 		Console.WriteLine(game);
 		Console.WriteLine(" ");
 
-		var solver = new Solver(game, 11);
+		var solver = new Solver(game, 12);
 		solver.ComputeValue();
 
 		Console.WriteLine("Total leaves visited: " + solver.LeavesVisited);
