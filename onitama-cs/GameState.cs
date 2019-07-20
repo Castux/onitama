@@ -27,7 +27,13 @@ namespace Onitama
 
 		public override string ToString()
 		{
-			return Card.Definitions[card].Name + " " + CellToCoords(from) + " " + CellToCoords(to);
+			var res = Card.Definitions[card].Name + " " + CellToCoords(from) + " " + CellToCoords(to);
+
+			var q = (MoveQuality)quality;
+			if (q != MoveQuality.Unknown && q != MoveQuality.Normal)
+				res += " " + q;
+
+			return res;
 		}
 
 		public static string CellToCoords(byte cell)
@@ -125,6 +131,7 @@ namespace Onitama
 		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, List<Move> outMoves)
 		{
 			var destinations = Card.Definitions[card].destinations[(int)Player, from];
+			var goalGate = Player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
 
 			foreach (var dest in destinations)
 			{
@@ -145,8 +152,6 @@ namespace Onitama
 						quality = MoveQuality.Capture;
 
 					// Moving master to the goal is also a win!
-
-					var goalGate = Player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
 
 					if ((ownMaster & fromBit) != 0 && destBit == goalGate)
 					{
