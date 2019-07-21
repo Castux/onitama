@@ -39,6 +39,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Board.cs" />
+    <Compile Include="Hash.cs" />
+    <Compile Include="TranspositionTable.cs" />
     <Compile Include="Solver.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Cards.cs" />

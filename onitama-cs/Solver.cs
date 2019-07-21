@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace Onitama
 {
+	public struct MemoEntry
+	{
+		public Move BestMove;
+		public int Value;
+	}
+
 	public class Solver
 	{
 		public const int MaxScore = 100;
@@ -10,11 +16,12 @@ namespace Onitama
 		public int LeavesVisited { private set; get; }
 		public int NodesVisited { private set; get; }
 		public int Value { private set; get; }
-		public List<Move> BestMoves { private set; get; }
 
 		private GameState root;
 		private int maxDepth;
 		private List<List<Move>> moveLists;
+
+		public Dictionary<GameState, MemoEntry> transpositionTable;
 
 		private List<Move> tmpMoves;
 
@@ -24,16 +31,25 @@ namespace Onitama
 			root = game;
 			maxDepth = depth;
 
+			transpositionTable = new Dictionary<GameState, MemoEntry>();
+
 			// Preallocate all the move lists
-			BestMoves = new List<Move>();
 			moveLists = new List<List<Move>>();
-			for(int i = 0; i <= depth; i++)
+			for (int i = 0; i <= depth; i++)
 			{
 				moveLists.Add(new List<Move>());
-				BestMoves.Add(new Move());
 			}
 
 			tmpMoves = new List<Move>();
+		}
+
+		public List<Move> BestMoves()
+		{
+			var res = new List<Move>();
+
+			res.Add(transpositionTable[root].BestMove);
+
+			return res;
 		}
 
 		public void ComputeValue()
@@ -61,7 +77,7 @@ namespace Onitama
 
 			tmpMoves.Clear();
 
-			foreach(var m in moves)
+			foreach (var m in moves)
 			{
 				if (m.quality == (byte)MoveQuality.Win)
 					tmpMoves.Add(m);
@@ -79,8 +95,9 @@ namespace Onitama
 					tmpMoves.Add(m);
 			}
 
-			moves = tmpMoves;
-			moveLists[depth] = tmpMoves;
+			moves.AddRange(tmpMoves);
+
+			int bestMoveIndex = -1;
 
 			// Do the thing!
 
@@ -91,20 +108,26 @@ namespace Onitama
 				var childState = state.ApplyMove(move);
 				var childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
 
-				if(childValue > value)
+				if (childValue > value)
 				{
 					value = childValue;
+					bestMoveIndex = i;
 				}
 
-				if(value > alpha)
+				if (value > alpha)
 				{
 					alpha = value;
-					BestMoves[depth] = move;
 				}
 
 				if (alpha >= beta)
 					break;
 			}
+
+			transpositionTable[state] = new MemoEntry
+			{
+				BestMove = moves[bestMoveIndex],
+				Value = value
+			};
 
 			return value;
 		}

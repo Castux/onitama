@@ -30,10 +30,10 @@ namespace Onitama
 		// Cell i is represented by (1 << i) in bitboards
 		// Cells go top-left to bottom-right, line by line, 0 to 24
 
-		private readonly int topStudents;
-		private readonly int bottomStudents;
-		private readonly int topMaster;
-		private readonly int bottomMaster;
+		public readonly int topStudents;
+		public readonly int bottomStudents;
+		public readonly int topMaster;
+		public readonly int bottomMaster;
 
 		public const int TopGateBits = 0b00000_00000_00000_00000_00100;
 		public const int BottomGateBits = 0b00100_00000_00000_00000_00000;
