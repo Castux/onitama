@@ -25,6 +25,11 @@ namespace Onitama
 			this.quality = (byte)quality;
 		}
 
+		public bool Equals(Move m2)
+		{
+			return card == m2.card && from == m2.from && to == m2.to;
+		}
+
 		public override string ToString()
 		{
 			var res = Card.Definitions[card].Name + " " + CellToCoords(from) + " " + CellToCoords(to);

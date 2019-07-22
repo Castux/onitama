@@ -3,37 +3,35 @@ using System.Collections.Generic;
 
 namespace Onitama
 {
-	public struct MemoEntry
-	{
-		public Move BestMove;
-		public int Value;
-	}
-
 	public class Solver
 	{
 		public const int MaxScore = 100;
 
 		public int LeavesVisited { private set; get; }
 		public int NodesVisited { private set; get; }
+		public int MemHits { private set; get; }
 		public int Value { private set; get; }
 
 		private GameState root;
 		private int maxDepth;
 		private List<List<Move>> moveLists;
 
-		public Dictionary<GameState, MemoEntry> transpositionTable;
+		public TranspositionTable table;
 
 		private List<Move> tmpMoves;
 
 		public Solver(GameState game, int depth)
 		{
 			LeavesVisited = 0;
+			NodesVisited = 0;
+			MemHits = 0;
 			root = game;
 			maxDepth = depth;
 
-			transpositionTable = new Dictionary<GameState, MemoEntry>();
+			table = new TranspositionTable(24);
 
 			// Preallocate all the move lists
+
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= depth; i++)
 			{
@@ -41,15 +39,6 @@ namespace Onitama
 			}
 
 			tmpMoves = new List<Move>();
-		}
-
-		public List<Move> BestMoves()
-		{
-			var res = new List<Move>();
-
-			res.Add(transpositionTable[root].BestMove);
-
-			return res;
 		}
 
 		public void ComputeValue()
@@ -60,6 +49,20 @@ namespace Onitama
 		private int ComputeValue(GameState state, int depth, int alpha, int beta)
 		{
 			NodesVisited++;
+			if (NodesVisited % 100000 == 0)
+				Console.WriteLine("Nodes visited: " + NodesVisited);
+
+			// Check memo
+
+			var memHit = table.Get(state, out Move memMove, out int memValue, out int memDepth);
+			if (memHit)
+			{
+				if (memDepth >= depth)
+				{
+					MemHits++;
+					return memValue;
+				}
+			}
 
 			// TODO: see if we should pass state as reference? Is that even a thing?
 			// Negamax!
@@ -73,25 +76,32 @@ namespace Onitama
 			if (depth == 0 || moves.Count == 0)
 				return ComputeLeafValue(state);
 
-			// Check most promising moves first: win, capture, normal
+			// Check most promising moves first: previously computed best move, win, capture, normal
 
 			tmpMoves.Clear();
 
+			if(memHit)
+			{
+				foreach (var m in moves)
+					if (m.Equals(memMove))
+						tmpMoves.Add(m);
+			}
+
 			foreach (var m in moves)
 			{
-				if (m.quality == (byte)MoveQuality.Win)
+				if (m.quality == (byte)MoveQuality.Win && !m.Equals(memMove))
 					tmpMoves.Add(m);
 			}
 
 			foreach (var m in moves)
 			{
-				if (m.quality == (byte)MoveQuality.Capture)
+				if (m.quality == (byte)MoveQuality.Capture && !m.Equals(memMove))
 					tmpMoves.Add(m);
 			}
 
 			foreach (var m in moves)
 			{
-				if (m.quality == (byte)MoveQuality.Normal)
+				if (m.quality == (byte)MoveQuality.Normal && !m.Equals(memMove))
 					tmpMoves.Add(m);
 			}
 
@@ -123,11 +133,7 @@ namespace Onitama
 					break;
 			}
 
-			transpositionTable[state] = new MemoEntry
-			{
-				BestMove = moves[bestMoveIndex],
-				Value = value
-			};
+			table.Add(state, moves[bestMoveIndex], value, depth);
 
 			return value;
 		}
