@@ -35,15 +35,24 @@ namespace Onitama
 		public readonly int topMaster;
 		public readonly int bottomMaster;
 
+		public readonly ulong hash;
+
 		public const int TopGateBits = 0b00000_00000_00000_00000_00100;
 		public const int BottomGateBits = 0b00100_00000_00000_00000_00000;
 
-		public Board(int tS, int bS, int tM, int bM)
+		public Board(int tS, int bS, int tM, int bM, ulong? hash = null)
 		{
 			topStudents = tS;
 			bottomStudents = bS;
 			bottomMaster = bM;
 			topMaster = tM;
+
+			this.hash = 0;
+
+			if (!hash.HasValue)
+				this.hash = Hash.HashBoard(this);
+			else
+				this.hash = hash.Value;
 		}
 
 		public static Board InitialBoard()
@@ -78,23 +87,37 @@ namespace Onitama
 
 		public Board Move(int from, int to)
 		{
-			int fromBit = 1 << from;
-			int toBit = 1 << to;
-
-			/*
-			// Do we capture?
-
-			if ((GetBitboard(Piece.Master, player.Opponent()) & toBit) != 0)
-				capture = Piece.Master;
-			else if ((GetBitboard(Piece.Student, player.Opponent()) & toBit) != 0)
-				capture = Piece.Student;
-			else
-				capture = null;
-			*/
-
 			// Apply move
 
-			return RawMove(fromBit, toBit);
+			var fromBit = 1 << from;
+			var toBit = 1 << to;
+
+			var h = UpdateHash(from, to, fromBit, toBit);
+			
+			// Make new board
+
+#if DEBUG
+
+			var res = new Board(
+				tM: MoveBitBoard(topMaster, fromBit, toBit),
+				bM: MoveBitBoard(bottomMaster, fromBit, toBit),
+				tS: MoveBitBoard(topStudents, fromBit, toBit),
+				bS: MoveBitBoard(bottomStudents, fromBit, toBit)
+			);
+
+			if (res.hash != h)
+				throw new Exception("Hash failure");
+#else
+
+			var res = new Board(
+				tM: MoveBitBoard(topMaster, fromBit, toBit),
+				bM: MoveBitBoard(bottomMaster, fromBit, toBit),
+				tS: MoveBitBoard(topStudents, fromBit, toBit),
+				bS: MoveBitBoard(bottomStudents, fromBit, toBit),
+				hash: h
+			);
+#endif
+			return res;
 		}
 
 		public override string ToString()
@@ -122,6 +145,8 @@ namespace Onitama
 				if (i % 5 == 4)
 					res += '\n';
 			}
+
+			res += hash + "\n";
 
 			return res;
 		}
@@ -173,16 +198,6 @@ namespace Onitama
 			}
 		}
 
-		private Board RawMove(int fromBit, int toBit)
-		{
-			return new Board(
-				tM: MoveBitBoard(topMaster, fromBit, toBit),
-				bM: MoveBitBoard(bottomMaster, fromBit, toBit),
-				tS: MoveBitBoard(topStudents, fromBit, toBit),
-				bS: MoveBitBoard(bottomStudents, fromBit, toBit)
-			);
-		}
-
 		public int PlayerPiecesBitboard(Player player)
 		{
 			return GetBitboard(Piece.Master, player) | GetBitboard(Piece.Student, player);
@@ -204,6 +219,47 @@ namespace Onitama
 				else
 					return bottomStudents;
 			}
+		}
+
+		private ulong UpdateHash(int from, int to, int fromBit, int toBit)
+		{
+			// Update hash
+
+			var h = hash;
+
+			// Remove origin pawn and move it to destination
+
+			if ((fromBit & topMaster) != 0)
+			{
+				h = Hash.UpdateBoardHash(h, from, Player.Top, Piece.Master);
+				h = Hash.UpdateBoardHash(h, to, Player.Top, Piece.Master);
+			}
+			else if ((fromBit & topStudents) != 0)
+			{
+				h = Hash.UpdateBoardHash(h, from, Player.Top, Piece.Student);
+				h = Hash.UpdateBoardHash(h, to, Player.Top, Piece.Student);
+			}
+			else if ((fromBit & bottomMaster) != 0)
+			{
+				h = Hash.UpdateBoardHash(h, from, Player.Bottom, Piece.Master);
+				h = Hash.UpdateBoardHash(h, to, Player.Bottom, Piece.Master);
+			}
+			else if ((fromBit & bottomStudents) != 0)
+			{
+				h = Hash.UpdateBoardHash(h, from, Player.Bottom, Piece.Student);
+				h = Hash.UpdateBoardHash(h, to, Player.Bottom, Piece.Student);
+			}
+			else
+				throw new Exception("Invalid move");
+
+			// Remove destination
+
+			if ((toBit & topMaster) != 0) h = Hash.UpdateBoardHash(h, to, Player.Top, Piece.Master);
+			else if ((toBit & topStudents) != 0) h = Hash.UpdateBoardHash(h, to, Player.Top, Piece.Student);
+			else if ((toBit & bottomMaster) != 0) h = Hash.UpdateBoardHash(h, to, Player.Bottom, Piece.Master);
+			else if ((toBit & bottomStudents) != 0) h = Hash.UpdateBoardHash(h, to, Player.Bottom, Piece.Student);
+
+			return h;
 		}
 	}
 

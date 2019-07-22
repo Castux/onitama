@@ -61,7 +61,22 @@ namespace Onitama
 			for(var cell = 0; cell < 25; cell++)
 			{
 				hash ^= (tS & 1ul) * boardCodes[cell, (int)Player.Top, (int)Piece.Student];
+				hash ^= (tM & 1ul) * boardCodes[cell, (int)Player.Top, (int)Piece.Master];
+				hash ^= (bS & 1ul) * boardCodes[cell, (int)Player.Bottom, (int)Piece.Student];
+				hash ^= (bM & 1ul) * boardCodes[cell, (int)Player.Bottom, (int)Piece.Master];
+
+				tS >>= 1;
+				tM >>= 1;
+				bS >>= 1;
+				bM >>= 1;
 			}
+
+			return hash;
+		}
+
+		public static ulong UpdateBoardHash(ulong hash, int cell, Player player, Piece piece)
+		{
+			return hash ^ boardCodes[cell, (int)player, (int)piece];
 		}
 	}
 }
