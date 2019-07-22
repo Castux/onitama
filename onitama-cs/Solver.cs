@@ -138,20 +138,20 @@ namespace Onitama
 			if (LeavesVisited % 1000000 == 0)
 				Console.WriteLine("Leaves visited: " + LeavesVisited);
 
-			if (state.Player == Player.Top)
+			if (state.player == Player.Top)
 			{
-				if (state.Board.BottomWon())
+				if (state.board.BottomWon())
 					return -MaxScore;
 
-				return state.Board.TopStudentCount() - state.Board.BottomStudentCount();
+				return state.board.TopStudentCount() - state.board.BottomStudentCount();
 			}
 
 			else
 			{
-				if (state.Board.TopWon())
+				if (state.board.TopWon())
 					return -MaxScore;
 
-				return state.Board.BottomStudentCount() - state.Board.TopStudentCount();
+				return state.board.BottomStudentCount() - state.board.TopStudentCount();
 			}
 		}
 	}

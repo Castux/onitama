@@ -108,6 +108,8 @@ namespace Onitama
 		public readonly byte bottomCard2;
 		public readonly byte nextCard;
 
+		public readonly ulong hash;
+
 		public CardState(byte tc1, byte tc2, byte bc1, byte bc2, byte nc)
 		{
 			if (tc1 < tc2)
@@ -133,6 +135,9 @@ namespace Onitama
 			}
 
 			nextCard = nc;
+
+			hash = 0;
+			hash = Hash.HashCardState(this);
 		}
 
 		public static CardState Default()

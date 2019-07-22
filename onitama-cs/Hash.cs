@@ -78,5 +78,29 @@ namespace Onitama
 		{
 			return hash ^ boardCodes[cell, (int)player, (int)piece];
 		}
+
+		public static ulong HashCardState(CardState cards)
+		{
+			ulong hash = 0;
+
+			hash ^= cardsCodes[cards.topCard1, (int)Player.Top];
+			hash ^= cardsCodes[cards.topCard2, (int)Player.Top];
+
+			// hash ^= cardsCodes[cards.bottomCard1, Player.Bottom];
+			// hash ^= cardsCodes[cards.bottomCard2, Player.Bottom];
+
+			// No need to hash the fifth card, we're already fully determined
+			// Actually, we could also just hash the fifth card instead of player 2's
+			// So yeah, let's do that. We assign it to "bottom" but it's the same, really.
+
+			hash ^= cardsCodes[cards.nextCard, (int)Player.Bottom];
+
+			return hash;
+		}
+
+		public static ulong HashPlayer(Player player)
+		{
+			return playersCodes[(int)player];
+		}
 	}
 }

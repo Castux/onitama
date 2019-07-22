@@ -47,41 +47,40 @@ namespace Onitama
 
 	public struct GameState
 	{
-		public Board Board { get; private set; }
-		public CardState Cards { get; private set; }
-		public Player Player { get; private set; }
+		public readonly Board board;
+		public readonly CardState cards;
+		public readonly Player player;
+		public readonly ulong hash;
+
 
 		public static GameState Default()
 		{
-			return new GameState
-			{
-				Board = Board.InitialBoard(),
-				Cards = CardState.Default(),
-				Player = Player.Bottom
-			};
+			return new GameState(Board.InitialBoard(), CardState.Default(), Player.Bottom);
 		}
 
 		public GameState(Board board, CardState cards, Player player)
 		{
-			Board = board;
-			Cards = cards;
-			Player = player;
+			this.board = board;
+			this.cards = cards;
+			this.player = player;
+
+			hash = board.hash ^ cards.hash ^ Hash.HashPlayer(player);
 		}
 
 		public override string ToString()
 		{
 			var res = "";
 
-			res += Card.Definitions[Cards.topCard1].Name + " " + Card.Definitions[Cards.topCard2].Name;
-			if (Player == Player.Top)
-				res += " [" + Card.Definitions[Cards.nextCard].Name + "]";
+			res += Card.Definitions[cards.topCard1].Name + " " + Card.Definitions[cards.topCard2].Name;
+			if (player == Player.Top)
+				res += " [" + Card.Definitions[cards.nextCard].Name + "]";
 
 			res += '\n';
-			res += Board;
+			res += board;
 
-			res += Card.Definitions[Cards.bottomCard1].Name + " " + Card.Definitions[Cards.bottomCard2].Name;
-			if (Player == Player.Bottom)
-				res += " [" + Card.Definitions[Cards.nextCard].Name + "]";
+			res += Card.Definitions[cards.bottomCard1].Name + " " + Card.Definitions[cards.bottomCard2].Name;
+			if (player == Player.Bottom)
+				res += " [" + Card.Definitions[cards.nextCard].Name + "]";
 
 			return res;
 		}
@@ -90,25 +89,25 @@ namespace Onitama
 		{
 			outMoves.Clear();
 
-			if (Board.TopWon() || Board.BottomWon())
+			if (board.TopWon() || board.BottomWon())
 				return;
 
-			var ownMaster = Board.GetBitboard(Piece.Master, Player);
-			var ownStudents = Board.GetBitboard(Piece.Student, Player);
-			var opponentMaster = Board.GetBitboard(Piece.Master, Player.Opponent());
-			var opponentStudents = Board.GetBitboard(Piece.Student, Player.Opponent());
+			var ownMaster = board.GetBitboard(Piece.Master, player);
+			var ownStudents = board.GetBitboard(Piece.Student, player);
+			var opponentMaster = board.GetBitboard(Piece.Master, player.Opponent());
+			var opponentStudents = board.GetBitboard(Piece.Student, player.Opponent());
 
 			byte card1, card2;
 
-			if (Player == Player.Top)
+			if (player == Player.Top)
 			{
-				card1 = Cards.topCard1;
-				card2 = Cards.topCard2;
+				card1 = cards.topCard1;
+				card2 = cards.topCard2;
 			}
 			else
 			{
-				card1 = Cards.bottomCard1;
-				card2 = Cards.bottomCard2;
+				card1 = cards.bottomCard1;
+				card2 = cards.bottomCard2;
 			}
 
 			int fromBit = 1;
@@ -130,8 +129,8 @@ namespace Onitama
 
 		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, List<Move> outMoves)
 		{
-			var destinations = Card.Definitions[card].destinations[(int)Player, from];
-			var goalGate = Player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
+			var destinations = Card.Definitions[card].destinations[(int)player, from];
+			var goalGate = player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
 
 			foreach (var dest in destinations)
 			{
@@ -165,12 +164,11 @@ namespace Onitama
 
 		public GameState ApplyMove(Move move)
 		{
-			return new GameState
-			{
-				Cards = Cards.Move(move.card),
-				Board = Board.Move(move.from, move.to),
-				Player = Player.Opponent()
-			};
+			return new GameState(
+				board.Move(move.from, move.to),
+				cards.Move(move.card),	
+				player.Opponent()
+			);
 		}
 	}
 }
