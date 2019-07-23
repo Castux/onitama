@@ -54,6 +54,12 @@ namespace Onitama
 			Value = ComputeValue(root, maxDepth, -int.MaxValue, int.MaxValue);
 		}
 
+		public void Continue(GameState state)
+		{
+			root = state;
+			ComputeValueIterative();
+		}
+
 		public List<Move> PrincipalVariation()
 		{
 			var res = new List<Move>();
@@ -94,6 +100,11 @@ namespace Onitama
 
 		private int ComputeValue(GameState state, int depth, int alpha, int beta)
 		{
+			if (depth == 0)
+			{
+				return QuiescenceSearch(state, alpha, beta, 0);
+			}
+
 			var startAlpha = alpha;
 
 			NodesVisited++;
@@ -133,7 +144,7 @@ namespace Onitama
 			moves.Clear();
 			state.ComputeValidMoves(moves);
 
-			if (depth == 0 || moves.Count == 0)
+			if (moves.Count == 0)
 			{
 				return QuiescenceSearch(state, alpha, beta, 0);
 			}
@@ -230,7 +241,7 @@ namespace Onitama
 
 			// Positioning
 
-			score += Positioning.Advance(state.board);
+			score += Positioning.TotalAdvance(state.board);
 			
 			// Negate if it was Bottom's turn
 

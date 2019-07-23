@@ -26,7 +26,7 @@ namespace Onitama
 			return topPositioning - bottomPositioning;
 		}
 
-		public static int Advance(Board board)
+		public static int TotalAdvance(Board board)
 		{
 			var rowBits = 0b11111;
 			var topScore = 0;
@@ -34,6 +34,26 @@ namespace Onitama
 
 			var topPieces = board.PlayerPiecesBitboard(Player.Top);
 			var bottomPieces = board.PlayerPiecesBitboard(Player.Bottom);
+
+			for (var i = 1; i <= 5; i++)
+			{
+				topScore += Board.BitCount(topPieces & rowBits) * i;
+				bottomScore += Board.BitCount(bottomPieces & rowBits) * (6 - i);
+
+				rowBits <<= 5;
+			}
+
+			return topScore - bottomScore;
+		}
+
+		public static int MasterAdvance(Board board)
+		{
+			var rowBits = 0b11111;
+			var topScore = 0;
+			var bottomScore = 0;
+
+			var topPieces = board.GetBitboard(Piece.Master, Player.Top);
+			var bottomPieces = board.GetBitboard(Piece.Master, Player.Bottom);
 
 			for (var i = 1; i <= 5; i++)
 			{
