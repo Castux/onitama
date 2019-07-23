@@ -18,6 +18,7 @@ namespace Onitama
 		private GameState root;
 		private int maxDepth;
 		private TimeSpan timeout;
+		private int lastTimeoutCheck;
 
 		private List<List<Move>> moveLists;
 
@@ -57,6 +58,8 @@ namespace Onitama
 			NodesVisited = 0;
 			QuiescenceNodesVisited = 0;
 			MemHits = 0;
+
+			lastTimeoutCheck = 0;
 
 			IterativeSearch();
 		}
@@ -146,7 +149,6 @@ namespace Onitama
 			var value = int.MinValue;
 
 			var moves = moveLists[depth];
-			moves.Clear();
 			state.ComputeValidMoves(moves);
 
 			if (moves.Count == 0)
@@ -182,7 +184,8 @@ namespace Onitama
 			}
 
 			moves.Clear();
-			moves.AddRange(tmpMoves);
+			foreach (var m in tmpMoves)
+				moves.Add(m);
 
 			int bestMoveIndex = -1;
 
@@ -310,7 +313,13 @@ namespace Onitama
 
 		private bool Timeouted()
 		{
-			return DateTime.Now - StartTime > timeout;
+			if(NodesVisited - lastTimeoutCheck > 100000)
+			{
+				lastTimeoutCheck = NodesVisited;
+				return DateTime.Now - StartTime > timeout;
+			}
+
+			return false;
 		}
 	}
 }

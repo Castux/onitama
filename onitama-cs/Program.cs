@@ -9,8 +9,8 @@ public static class Program
 	{
 		var game = GameState.Default();
 
-		var topSolver = new Solver(1000, TimeSpan.FromSeconds(15));
-		var bottomSolver = new Solver(1000, TimeSpan.FromSeconds(6));
+		var solver = new Solver(10, TimeSpan.FromSeconds(15000));
+		solver.Start(game);
 
 		while (true)
 		{
@@ -19,8 +19,6 @@ public static class Program
 
 			if (game.board.TopWon() || game.board.BottomWon())
 				break;
-
-			var solver = (game.player == Player.Top) ? topSolver : bottomSolver;
 
 			solver.Start(game);
 
@@ -31,5 +29,7 @@ public static class Program
 
 			game = game.ApplyMove(move);
 		}
+
+		Console.ReadLine();
 	}
 }

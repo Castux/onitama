@@ -96,19 +96,6 @@ namespace Onitama
 			
 			// Make new board
 
-#if DEBUG
-
-			var res = new Board(
-				tM: MoveBitBoard(topMaster, fromBit, toBit),
-				bM: MoveBitBoard(bottomMaster, fromBit, toBit),
-				tS: MoveBitBoard(topStudents, fromBit, toBit),
-				bS: MoveBitBoard(bottomStudents, fromBit, toBit)
-			);
-
-			if (res.hash != h)
-				throw new Exception("Hash failure");
-#else
-
 			var res = new Board(
 				tM: MoveBitBoard(topMaster, fromBit, toBit),
 				bM: MoveBitBoard(bottomMaster, fromBit, toBit),
@@ -116,7 +103,6 @@ namespace Onitama
 				bS: MoveBitBoard(bottomStudents, fromBit, toBit),
 				hash: h
 			);
-#endif
 			return res;
 		}
 
