@@ -14,23 +14,24 @@ namespace Onitama
 		public int MemHits { private set; get; }
 		public int Value { private set; get; }
 		public DateTime StartTime { private set; get; }
-		public TimeSpan Timeout { private set; get; }
 
 		private GameState root;
 		private int maxDepth;
+		private TimeSpan timeout;
+
 		private List<List<Move>> moveLists;
 
 		private TranspositionTable table;
 		private List<Move> tmpMoves;
 		private List<List<Move>> quiescenceMoves;
 		
-		public Solver(GameState game, int depth, TimeSpan timeout)
+		public Solver(GameState game, int maxDepth, TimeSpan timeout)
 		{
 			// Parameters
 
 			root = game;
-			maxDepth = depth;
-			Timeout = timeout;
+			this.maxDepth = maxDepth;
+			this.timeout = timeout;
 
 			// Stats
 
@@ -44,10 +45,9 @@ namespace Onitama
 			table = new TranspositionTable(26);
 
 			moveLists = new List<List<Move>>();
-			for (int i = 0; i <= depth; i++)
+			for (int i = 0; i <= maxDepth; i++)
 				moveLists.Add(new List<Move>());
 			
-
 			tmpMoves = new List<Move>();
 
 			quiescenceMoves = new List<List<Move>>();
@@ -304,7 +304,7 @@ namespace Onitama
 
 		private bool Timeouted()
 		{
-			return DateTime.Now - StartTime > Timeout;
+			return DateTime.Now - StartTime > timeout;
 		}
 	}
 }
