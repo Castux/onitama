@@ -199,7 +199,19 @@ namespace Onitama
 				var move = moves[i];
 
 				var childState = state.ApplyMove(move);
-				var childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
+				int childValue;
+
+				if (i == 0)
+				{
+					childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
+				}
+				else
+				{
+					childValue = -ComputeValue(childState, depth - 1, -alpha-1, -alpha);
+
+					if(childValue > alpha && childValue < beta)
+						childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
+				}
 
 				if (childValue > value)
 				{
