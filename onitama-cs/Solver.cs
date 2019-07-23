@@ -13,6 +13,7 @@ namespace Onitama
 		public int MemHits { private set; get; }
 		public int Value { private set; get; }
 		public DateTime StartTime { private set; get; }
+		public TimeSpan Timeout { private set; get; }
 
 		private GameState root;
 		private int maxDepth;
@@ -22,18 +23,24 @@ namespace Onitama
 		private List<Move> tmpMoves;
 		private List<List<Move>> quiescenceMoves;
 		
-		public Solver(GameState game, int depth)
+		public Solver(GameState game, int depth, TimeSpan timeout)
 		{
+			// Parameters
+
+			root = game;
+			maxDepth = depth;
+			Timeout = timeout;
+
+			// Stats
+
 			LeavesVisited = 0;
 			NodesVisited = 0;
 			QuiescenceNodesVisited = 0;
 			MemHits = 0;
-			root = game;
-			maxDepth = depth;
+
+			// Allocs
 
 			table = new TranspositionTable(26);
-
-			// Preallocate all the move lists
 
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= depth; i++)
@@ -87,15 +94,19 @@ namespace Onitama
 		{
 			StartTime = DateTime.Now;
 
-			var value = -int.MaxValue;
+			Value = -int.MaxValue;
 
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
-				value = ComputeValue(root, depth, -int.MaxValue, int.MaxValue);
-				Console.WriteLine("Depth " + depth + ": " + value + " " + (DateTime.Now - StartTime).TotalSeconds);
-			}
+				Value = ComputeValue(root, depth, -int.MaxValue, int.MaxValue);
+				Console.WriteLine("Depth " + depth + ": " + Value + " " + (DateTime.Now - StartTime).TotalSeconds);
 
-			Value = value;
+				if (Timeouted())
+					break;
+
+				if (Math.Abs(Value) == MaxScore)
+					break;
+			}
 		}
 
 		private int ComputeValue(GameState state, int depth, int alpha, int beta)
@@ -202,6 +213,9 @@ namespace Onitama
 
 				if (alpha >= beta)
 					break;
+
+				if (Timeouted())
+					break;
 			}
 
 			// Save in transposition table
@@ -237,11 +251,8 @@ namespace Onitama
 			else
 			{
 				score = (state.board.TopStudentCount() - state.board.BottomStudentCount()) * 20;
+				score += Positioning.TotalAdvance(state.board);
 			}
-
-			// Positioning
-
-			score += Positioning.TotalAdvance(state.board);
 			
 			// Negate if it was Bottom's turn
 
@@ -288,6 +299,11 @@ namespace Onitama
 			}
 
 			return value;
+		}
+
+		private bool Timeouted()
+		{
+			return DateTime.Now - StartTime > Timeout;
 		}
 	}
 }
