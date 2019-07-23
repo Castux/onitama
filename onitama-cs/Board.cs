@@ -149,13 +149,13 @@ namespace Onitama
 			return res;
 		}
 
-		private static int BitCount(int bitBoard)
+		public static int BitCount(int i)
 		{
 			int count = 0;
-			while (bitBoard > 0)
+			while (i != 0)
 			{
-				count += bitBoard % 2;
-				bitBoard /= 2;
+				i &= i - 1;
+				count++;
 			}
 
 			return count;
