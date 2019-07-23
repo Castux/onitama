@@ -173,34 +173,25 @@ namespace Onitama
 				var dest = destinations[i];
 				var destBit = 1 << dest;
 
-				// As long as we don't have a piece there, it's valid
+				// Can't capture self
 
-				if (((ownMaster | ownStudents) & destBit) == 0)
-				{
-					// Check move quality
+				if (((ownMaster | ownStudents) & destBit) != 0)
+					continue;
 
-					var quality = MoveQuality.Normal;
+				// Check move quality
 
-					if ((opponentMaster & destBit) != 0)
-						quality = MoveQuality.Win;
-					else if ((opponentStudents & destBit) != 0)
-						quality = MoveQuality.Capture;
+				var quality = MoveQuality.Normal;
 
-					// Moving master to the goal is also a win!
+				if ((opponentMaster & destBit) != 0 || (destBit == goalGate && (ownMaster & fromBit) != 0))
+					quality = MoveQuality.Win;
+				else if ((opponentStudents & destBit) != 0)
+					quality = MoveQuality.Capture;
 
-					if ((ownMaster & fromBit) != 0 && destBit == goalGate)
-					{
-						quality = MoveQuality.Win;
-					}
+				if (winAndCaptureOnly && quality == MoveQuality.Normal)
+					continue;
 
-					if (winAndCaptureOnly && quality == MoveQuality.Normal)
-					{
-						continue;
-					}
-
-					var move = new Move(card, from, dest, quality);
-					tmpMoves.Add(move);
-				}
+				var move = new Move(card, from, dest, quality);
+				tmpMoves.Add(move);
 			}
 		}
 
