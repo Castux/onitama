@@ -46,7 +46,7 @@ namespace Onitama
 		{
 			StartTime = DateTime.Now;
 
-			Value = ComputeValue(root, maxDepth, -MaxScore, MaxScore);
+			Value = ComputeValue(root, maxDepth, -int.MaxValue, int.MaxValue);
 		}
 
 		public List<Move> PrincipalVariation()
@@ -80,7 +80,7 @@ namespace Onitama
 
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
-				value = ComputeValue(root, depth, -MaxScore, MaxScore);
+				value = ComputeValue(root, depth, -int.MaxValue, int.MaxValue);
 				Console.WriteLine("Depth " + depth + ": " + value + " " + (DateTime.Now - StartTime).TotalSeconds);
 			}
 
