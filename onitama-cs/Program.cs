@@ -9,40 +9,27 @@ public static class Program
 	{
 		var game = GameState.Default();
 
-		Console.WriteLine(game);
-		Console.WriteLine(" ");
+		var topSolver = new Solver(1000, TimeSpan.FromSeconds(15));
+		var bottomSolver = new Solver(1000, TimeSpan.FromSeconds(6));
 
-		var maxDepth = 13;
-
-		var solver = new Solver(maxDepth, TimeSpan.FromSeconds(300000));
-		solver.Start(game);
-
-		Console.WriteLine("Total time: " + (DateTime.Now - solver.StartTime).TotalMilliseconds / 1000f);
-
-		Console.WriteLine("Total nodes visited: " + solver.NodesVisited);
-		Console.WriteLine("Of which leaves: " + solver.LeavesVisited * 1f / solver.NodesVisited * 100 + "%");
-		Console.WriteLine("Transposition table hits: " + solver.MemHits * 1f / solver.LeavesVisited * 100 + "%");
-
-		Console.WriteLine("Quiescence nodes per leaf: " + solver.QuiescenceNodesVisited * 1f / solver.LeavesVisited);
-
-		Console.WriteLine("Value: " + solver.Value);
-
-		var moves = solver.PrincipalVariation();
-
-		var g = game;
-		foreach (var m in moves)
+		while (true)
 		{
-			Console.Write(m);
-			Console.Write(" | ");
+			Console.WriteLine("=======");
+			Console.WriteLine(game);
 
-			g = g.ApplyMove(m);
+			if (game.board.TopWon() || game.board.BottomWon())
+				break;
+
+			var solver = (game.player == Player.Top) ? topSolver : bottomSolver;
+
+			solver.Start(game);
+
+			Console.WriteLine("Value: " + solver.Value);
+			var move = solver.PrincipalVariation()[0];
+
+			Console.WriteLine(move);
+
+			game = game.ApplyMove(move);
 		}
-		if (moves.Count < maxDepth)
-			Console.WriteLine("...");
-		else
-			Console.WriteLine("");
-
-		Console.WriteLine(g);
-
 	}
 }

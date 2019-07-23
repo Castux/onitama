@@ -25,20 +25,12 @@ namespace Onitama
 		private List<Move> tmpMoves;
 		private List<List<Move>> quiescenceMoves;
 		
-		public Solver(GameState game, int maxDepth, TimeSpan timeout)
+		public Solver(int maxDepth, TimeSpan timeout)
 		{
 			// Parameters
-
-			root = game;
+			
 			this.maxDepth = maxDepth;
 			this.timeout = timeout;
-
-			// Stats
-
-			LeavesVisited = 0;
-			NodesVisited = 0;
-			QuiescenceNodesVisited = 0;
-			MemHits = 0;
 
 			// Allocs
 
@@ -55,17 +47,18 @@ namespace Onitama
 				quiescenceMoves.Add(new List<Move>());
 		}
 
-		public void ComputeValue()
-		{
-			StartTime = DateTime.Now;
-
-			Value = ComputeValue(root, maxDepth, -int.MaxValue, int.MaxValue);
-		}
-
-		public void Continue(GameState state)
+		public void Start(GameState state)
 		{
 			root = state;
-			ComputeValueIterative();
+
+			// Stats
+
+			LeavesVisited = 0;
+			NodesVisited = 0;
+			QuiescenceNodesVisited = 0;
+			MemHits = 0;
+
+			IterativeSearch();
 		}
 
 		public List<Move> PrincipalVariation()
@@ -91,7 +84,7 @@ namespace Onitama
 			return res;
 		}
 
-		public void ComputeValueIterative()
+		private void IterativeSearch()
 		{
 			StartTime = DateTime.Now;
 
@@ -165,9 +158,10 @@ namespace Onitama
 
 			tmpMoves.Clear();
 
-			foreach (var m in moves)
-				if (m.Equals(ttBestMove))
-					tmpMoves.Add(m);
+			if (ttEntry.HasValue)
+			{
+				tmpMoves.Add(ttBestMove);
+			}
 
 			foreach (var m in moves)
 			{
