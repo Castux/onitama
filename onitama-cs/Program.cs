@@ -17,8 +17,8 @@ public static class Program
 		Console.WriteLine(game);
 		Console.WriteLine(" ");
 
-		var solver = new Solver(game, 12);
-		solver.ComputeValue();
+		var solver = new Solver(game, 14);
+		solver.ComputeValueIterative();
 
 		Console.WriteLine("Total leaves visited: " + solver.LeavesVisited);
 		Console.WriteLine("Total nodes visited: " + solver.NodesVisited);
@@ -38,6 +38,5 @@ public static class Program
 			
 		}
 
-		Console.ReadLine();
 	}
 }

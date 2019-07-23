@@ -69,14 +69,24 @@ namespace Onitama
 			return res;
 		}
 
+		public void ComputeValueIterative()
+		{
+			var value = -int.MaxValue;
+
+			for(var depth = 1; depth <= maxDepth; depth++)
+			{
+				value = ComputeValue(root, depth, -MaxScore, MaxScore);
+				Console.WriteLine("Depth " + depth + ": " + value);
+			}
+
+			Value = value;
+		}
+
 		private int ComputeValue(GameState state, int depth, int alpha, int beta)
 		{
 			var startAlpha = alpha;
 
-
 			NodesVisited++;
-			if (NodesVisited % 100000 == 0)
-				Console.WriteLine("Nodes visited: " + NodesVisited);
 
 			// Check transposition table
 
