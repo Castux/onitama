@@ -7,8 +7,8 @@ public static class Program
 {
 	static public void Main()
 	{
-		var cards = new CardState(3,13,0,14,10);
-		var game = new GameState(Board.InitialBoard(), cards, Player.Top);
+		var cards = new CardState(0,14,3,13,10);
+		var game = new GameState(Board.InitialBoard(), cards, Player.Bottom);
 
 		game = game.ApplyMove(new Move(13, 22, 18));
 
@@ -22,9 +22,22 @@ public static class Program
 
 		Console.WriteLine("Total leaves visited: " + solver.LeavesVisited);
 		Console.WriteLine("Total nodes visited: " + solver.NodesVisited);
-		Console.WriteLine("Transposition table hits: " + solver.MemHits);
+		Console.WriteLine("Transposition table hits: " + solver.MemHits * 1f / solver.LeavesVisited * 100 + "%");
 
 		Console.WriteLine("Value: " + solver.Value);
+
+		var moves = solver.PrincipalVariation();
+		foreach (var m in moves)
+		{
+			Console.WriteLine(game + "\n");
+
+			Console.WriteLine(m);
+			Console.WriteLine("\n==========");
+			
+			game = game.ApplyMove(m);
+			
+		}
+
 		Console.ReadLine();
 	}
 }

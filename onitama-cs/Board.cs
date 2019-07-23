@@ -146,8 +146,6 @@ namespace Onitama
 					res += '\n';
 			}
 
-			res += hash + "\n";
-
 			return res;
 		}
 

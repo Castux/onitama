@@ -28,7 +28,7 @@ namespace Onitama
 			root = game;
 			maxDepth = depth;
 
-			table = new TranspositionTable(24);
+			table = new TranspositionTable(26);
 
 			// Preallocate all the move lists
 
@@ -46,23 +46,63 @@ namespace Onitama
 			Value = ComputeValue(root, maxDepth, -MaxScore, MaxScore);
 		}
 
+		public List<Move> PrincipalVariation()
+		{
+			var res = new List<Move>();
+			var g = root;
+			while(true)
+			{
+				var entry = table.Get(g);
+				if(entry.HasValue)
+				{
+					var move = entry.Value.move;
+					res.Add(move);
+
+					g = g.ApplyMove(move);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			return res;
+		}
+
 		private int ComputeValue(GameState state, int depth, int alpha, int beta)
 		{
+			var startAlpha = alpha;
+
+
 			NodesVisited++;
 			if (NodesVisited % 100000 == 0)
 				Console.WriteLine("Nodes visited: " + NodesVisited);
 
-			// Check memo
+			// Check transposition table
 
-			var memHit = table.Get(state, out Move memMove, out int memValue, out int memDepth);
-			if (memHit)
+			var ttEntry = table.Get(state);
+			if (ttEntry.HasValue && ttEntry.Value.depth >= depth)
 			{
-				if (memDepth >= depth)
-				{
-					MemHits++;
-					return memValue;
-				}
+				MemHits++;
+                switch (ttEntry.Value.flag)
+                {
+                    case TranspositionTable.Flag.Exact:
+                        return ttEntry.Value.value;
+                    case TranspositionTable.Flag.Lower:
+                        alpha = Math.Max(alpha, ttEntry.Value.value);
+                        break;
+                    case TranspositionTable.Flag.Upper:
+                        beta = Math.Min(beta, ttEntry.Value.value);
+                        break;
+                }
+
+                if (alpha >= beta)
+					return ttEntry.Value.value;
 			}
+
+			var ttBestMove = new Move();
+			if (ttEntry.HasValue)
+				ttBestMove = ttEntry.Value.move;
 
 			// TODO: see if we should pass state as reference? Is that even a thing?
 			// Negamax!
@@ -80,31 +120,29 @@ namespace Onitama
 
 			tmpMoves.Clear();
 
-			if(memHit)
-			{
-				foreach (var m in moves)
-					if (m.Equals(memMove))
-						tmpMoves.Add(m);
-			}
+			foreach (var m in moves)
+				if (m.Equals(ttBestMove))
+					tmpMoves.Add(m);
 
 			foreach (var m in moves)
 			{
-				if (m.quality == (byte)MoveQuality.Win && !m.Equals(memMove))
+				if (m.quality == (byte)MoveQuality.Win && !m.Equals(ttBestMove))
 					tmpMoves.Add(m);
 			}
 
 			foreach (var m in moves)
 			{
-				if (m.quality == (byte)MoveQuality.Capture && !m.Equals(memMove))
+				if (m.quality == (byte)MoveQuality.Capture && !m.Equals(ttBestMove))
 					tmpMoves.Add(m);
 			}
 
 			foreach (var m in moves)
 			{
-				if (m.quality == (byte)MoveQuality.Normal && !m.Equals(memMove))
+				if (m.quality == (byte)MoveQuality.Normal && !m.Equals(ttBestMove))
 					tmpMoves.Add(m);
 			}
 
+			moves.Clear();
 			moves.AddRange(tmpMoves);
 
 			int bestMoveIndex = -1;
@@ -133,7 +171,18 @@ namespace Onitama
 					break;
 			}
 
-			table.Add(state, moves[bestMoveIndex], value, depth);
+			// Save in transposition table
+
+			TranspositionTable.Flag flag;
+
+			if (value <= startAlpha)
+				flag = TranspositionTable.Flag.Upper;
+			else if (value >= beta)
+				flag = TranspositionTable.Flag.Lower;
+			else
+				flag = TranspositionTable.Flag.Exact;
+
+			table.Add(state, moves[bestMoveIndex], value, depth, flag);
 
 			return value;
 		}
