@@ -57,6 +57,12 @@ namespace Onitama
 		public readonly Player player;
 		public readonly ulong hash;
 
+		private static List<Move> tmpMoves;
+
+		static GameState()
+		{
+			tmpMoves = new List<Move>();
+		}
 
 		public static GameState Default()
 		{
@@ -90,9 +96,9 @@ namespace Onitama
 			return res;
 		}
 
-		public void ComputeValidMoves(List<Move> outMoves)
+		public void AddValidMoves(List<Move> outMoves)
 		{
-			outMoves.Clear();
+			tmpMoves.Clear();
 
 			if (board.TopWon() || board.BottomWon())
 				return;
@@ -127,8 +133,28 @@ namespace Onitama
 
 				// Check moves from both cards
 
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, outMoves);
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, outMoves);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, tmpMoves);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, tmpMoves);
+			}
+
+			// Order moves by quality
+
+			foreach (var m in tmpMoves)
+			{
+				if (m.quality == (byte)MoveQuality.Win)
+					outMoves.Add(m);
+			}
+
+			foreach (var m in tmpMoves)
+			{
+				if (m.quality == (byte)MoveQuality.Capture)
+					outMoves.Add(m);
+			}
+
+			foreach (var m in tmpMoves)
+			{
+				if (m.quality == (byte)MoveQuality.Normal)
+					outMoves.Add(m);
 			}
 		}
 
@@ -162,7 +188,8 @@ namespace Onitama
 						quality = MoveQuality.Win;
 					}
 
-					outMoves.Add(new Move(card, from, dest, quality));
+					var move = new Move(card, from, dest, quality);
+					outMoves.Add(move);
 				}
 			}
 		}

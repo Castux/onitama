@@ -23,7 +23,6 @@ namespace Onitama
 		private List<List<Move>> moveLists;
 
 		private TranspositionTable table;
-		private List<Move> tmpMoves;
 		private List<List<Move>> quiescenceMoves;
 		
 		public Solver(int maxDepth, TimeSpan timeout)
@@ -40,8 +39,6 @@ namespace Onitama
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= maxDepth; i++)
 				moveLists.Add(new List<Move>());
-			
-			tmpMoves = new List<Move>();
 
 			quiescenceMoves = new List<List<Move>>();
 			for (int i = 0; i < 20; i++)
@@ -108,7 +105,7 @@ namespace Onitama
 
 		private int ComputeValue(GameState state, int depth, int alpha, int beta)
 		{
-			if (depth == 0)
+			if (depth == 0 || state.board.BottomWon() || state.board.TopWon())
 			{
 				return QuiescenceSearch(state, alpha, beta, 0);
 			}
@@ -149,43 +146,13 @@ namespace Onitama
 			var value = int.MinValue;
 
 			var moves = moveLists[depth];
-			state.ComputeValidMoves(moves);
-
-			if (moves.Count == 0)
-			{
-				return QuiescenceSearch(state, alpha, beta, 0);
-			}
-
-			// Check most promising moves first: previously computed best move, win, capture, normal
-
-			tmpMoves.Clear();
+			moves.Clear();
 
 			if (ttEntry.HasValue)
 			{
-				tmpMoves.Add(ttBestMove);
+				moves.Add(ttBestMove);
 			}
-
-			foreach (var m in moves)
-			{
-				if (m.quality == (byte)MoveQuality.Win && !m.Equals(ttBestMove))
-					tmpMoves.Add(m);
-			}
-
-			foreach (var m in moves)
-			{
-				if (m.quality == (byte)MoveQuality.Capture && !m.Equals(ttBestMove))
-					tmpMoves.Add(m);
-			}
-
-			foreach (var m in moves)
-			{
-				if (m.quality == (byte)MoveQuality.Normal && !m.Equals(ttBestMove))
-					tmpMoves.Add(m);
-			}
-
-			moves.Clear();
-			foreach (var m in tmpMoves)
-				moves.Add(m);
+			state.AddValidMoves(moves);
 
 			int bestMoveIndex = -1;
 
@@ -288,7 +255,8 @@ namespace Onitama
 				return value;
 
 			var moves = quiescenceMoves[depth];
-			state.ComputeValidMoves(moves);
+			moves.Clear();
+			state.AddValidMoves(moves);
 
 			foreach(var m in moves)
 			{
