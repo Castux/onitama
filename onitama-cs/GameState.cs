@@ -96,7 +96,7 @@ namespace Onitama
 			return res;
 		}
 
-		public void AddValidMoves(List<Move> outMoves)
+		public void AddValidMoves(List<Move> outMoves, bool winAndCaptureOnly = false)
 		{
 			tmpMoves.Clear();
 
@@ -133,39 +133,44 @@ namespace Onitama
 
 				// Check moves from both cards
 
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1);
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, winAndCaptureOnly);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, winAndCaptureOnly);
 			}
 
 			// Order moves by quality
 
-			foreach (var m in tmpMoves)
+			for (int i = 0; i < tmpMoves.Count; i++)
 			{
-				if (m.quality == (byte)MoveQuality.Win)
-					outMoves.Add(m);
+				if (tmpMoves[i].quality == (byte)MoveQuality.Win)
+					outMoves.Add(tmpMoves[i]);
 			}
 
-			foreach (var m in tmpMoves)
+			for (int i = 0; i < tmpMoves.Count; i++)
 			{
-				if (m.quality == (byte)MoveQuality.Capture)
-					outMoves.Add(m);
+				if (tmpMoves[i].quality == (byte)MoveQuality.Capture)
+					outMoves.Add(tmpMoves[i]);
 			}
 
-			foreach (var m in tmpMoves)
+			if (winAndCaptureOnly)
+				return;
+
+			for (int i = 0; i < tmpMoves.Count; i++)
 			{
-				if (m.quality == (byte)MoveQuality.Normal)
-					outMoves.Add(m);
+				if (tmpMoves[i].quality == (byte)MoveQuality.Normal)
+					outMoves.Add(tmpMoves[i]);
 			}
 		}
 
-		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card)
+		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, bool winAndCaptureOnly)
 		{
 			var destinations = Card.Definitions[card].destinations[(int)player, from];
 			var goalGate = player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
+			var fromBit = 1 << from;
 
-			foreach (var dest in destinations)
+
+			for (int i = 0; i < destinations.Length; i++)
 			{
-				var fromBit = 1 << from;
+				var dest = destinations[i];
 				var destBit = 1 << dest;
 
 				// As long as we don't have a piece there, it's valid
@@ -188,6 +193,11 @@ namespace Onitama
 						quality = MoveQuality.Win;
 					}
 
+					if (winAndCaptureOnly && quality == MoveQuality.Normal)
+					{
+						continue;
+					}
+
 					var move = new Move(card, from, dest, quality);
 					tmpMoves.Add(move);
 				}
@@ -198,7 +208,7 @@ namespace Onitama
 		{
 			return new GameState(
 				board.Move(move.from, move.to),
-				cards.Move(move.card),	
+				cards.Move(move.card),
 				player.Opponent()
 			);
 		}

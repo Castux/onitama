@@ -283,10 +283,12 @@ namespace Onitama
 
 			var moves = quiescenceMoves[depth];
 			moves.Clear();
-			state.AddValidMoves(moves);
+			state.AddValidMoves(moves, winAndCaptureOnly: true);
 
-			foreach(var m in moves)
+			for(int i = 0; i < moves.Count; i++)
 			{
+				var m = moves[i];
+
 				if(m.quality == (byte)MoveQuality.Win || m.quality == (byte)MoveQuality.Capture)
 				{
 					var childState = state.ApplyMove(m);
