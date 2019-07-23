@@ -211,27 +211,42 @@ namespace Onitama
 
 		private int ComputeLeafValue(GameState state)
 		{
-			LeavesVisited++;
+			int score;
+			
+			// Count in Top's perspective
 
-			if (state.player == Player.Top)
+			if (state.board.BottomWon())
 			{
-				if (state.board.BottomWon())
-					return -MaxScore;
-
-				return state.board.TopStudentCount() - state.board.BottomStudentCount();
+				score = -MaxScore;
 			}
-
+			else if(state.board.TopWon())
+			{
+				score = MaxScore;
+			}
 			else
 			{
-				if (state.board.TopWon())
-					return -MaxScore;
-
-				return state.board.BottomStudentCount() - state.board.TopStudentCount();
+				score = (state.board.TopStudentCount() - state.board.BottomStudentCount()) * 20;
 			}
+
+			// Positioning
+
+			score += Positioning.Center(state.board);
+			
+			// Negate if it was Bottom's turn
+
+			if (state.player == Player.Bottom)
+				score = -score;
+
+			return score;
 		}
 
 		private int QuiescenceSearch(GameState state, int alpha, int beta, int depth)
 		{
+			if (depth == 0)
+				LeavesVisited++;
+			else
+				QuiescenceNodesVisited++;
+
 			var value = ComputeLeafValue(state);
 
 			if (value > alpha)
@@ -239,8 +254,6 @@ namespace Onitama
 
 			if (alpha >= beta)
 				return value;
-
-			QuiescenceNodesVisited++;
 
 			var moves = quiescenceMoves[depth];
 			state.ComputeValidMoves(moves);
