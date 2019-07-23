@@ -9,6 +9,7 @@ namespace Onitama
 
 		public int LeavesVisited { private set; get; }
 		public int NodesVisited { private set; get; }
+		public int QuiescenceNodesVisited { get; private set; }
 		public int MemHits { private set; get; }
 		public int Value { private set; get; }
 		public DateTime StartTime { private set; get; }
@@ -19,12 +20,13 @@ namespace Onitama
 
 		private TranspositionTable table;
 		private List<Move> tmpMoves;
-	
+		private List<List<Move>> quiescenceMoves;
 		
 		public Solver(GameState game, int depth)
 		{
 			LeavesVisited = 0;
 			NodesVisited = 0;
+			QuiescenceNodesVisited = 0;
 			MemHits = 0;
 			root = game;
 			maxDepth = depth;
@@ -35,11 +37,14 @@ namespace Onitama
 
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= depth; i++)
-			{
 				moveLists.Add(new List<Move>());
-			}
+			
 
 			tmpMoves = new List<Move>();
+
+			quiescenceMoves = new List<List<Move>>();
+			for (int i = 0; i < 20; i++)
+				quiescenceMoves.Add(new List<Move>());
 		}
 
 		public void ComputeValue()
@@ -129,7 +134,9 @@ namespace Onitama
 			state.ComputeValidMoves(moves);
 
 			if (depth == 0 || moves.Count == 0)
-				return ComputeLeafValue(state);
+			{
+				return QuiescenceSearch(state, alpha, beta, 0);
+			}
 
 			// Check most promising moves first: previously computed best move, win, capture, normal
 
@@ -221,6 +228,42 @@ namespace Onitama
 
 				return state.board.BottomStudentCount() - state.board.TopStudentCount();
 			}
+		}
+
+		private int QuiescenceSearch(GameState state, int alpha, int beta, int depth)
+		{
+			var value = ComputeLeafValue(state);
+
+			if (value > alpha)
+				alpha = value;
+
+			if (alpha >= beta)
+				return value;
+
+			QuiescenceNodesVisited++;
+
+			var moves = quiescenceMoves[depth];
+			state.ComputeValidMoves(moves);
+
+			foreach(var m in moves)
+			{
+				if(m.quality == (byte)MoveQuality.Win || m.quality == (byte)MoveQuality.Capture)
+				{
+					var childState = state.ApplyMove(m);
+					var childValue = -QuiescenceSearch(childState, -beta, -alpha, depth + 1);
+
+					if (childValue > value)
+						value = childValue;
+
+					if (value > alpha)
+						alpha = value;
+
+					if (alpha >= beta)
+						break;
+				}
+			}
+
+			return value;
 		}
 	}
 }
