@@ -5,7 +5,8 @@ namespace Onitama
 {
 	public class Solver
 	{
-		public const int MaxScore = 100;
+		public const int WinScore = 125;
+		public const int PawnScore = 25;
 
 		public int LeavesVisited { private set; get; }
 		public int NodesVisited { private set; get; }
@@ -104,7 +105,7 @@ namespace Onitama
 				if (Timeouted())
 					break;
 
-				if (Math.Abs(Value) == MaxScore)
+				if (Math.Abs(Value) == WinScore)
 					break;
 			}
 		}
@@ -242,15 +243,15 @@ namespace Onitama
 
 			if (state.board.BottomWon())
 			{
-				score = -MaxScore;
+				score = -WinScore;
 			}
 			else if(state.board.TopWon())
 			{
-				score = MaxScore;
+				score = WinScore;
 			}
 			else
 			{
-				score = (state.board.TopStudentCount() - state.board.BottomStudentCount()) * 20;
+				score = (state.board.TopStudentCount() - state.board.BottomStudentCount()) * PawnScore;
 				score += Positioning.TotalAdvance(state.board);
 			}
 			
