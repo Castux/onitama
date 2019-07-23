@@ -230,7 +230,7 @@ namespace Onitama
 
 			// Positioning
 
-			score += Positioning.Center(state.board);
+			score += Positioning.Advance(state.board);
 			
 			// Negate if it was Bottom's turn
 

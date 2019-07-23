@@ -26,12 +26,24 @@ namespace Onitama
 			return topPositioning - bottomPositioning;
 		}
 
-		public static int Advance(GameState state)
+		public static int Advance(Board board)
 		{
+			var rowBits = 0b11111;
+			var topScore = 0;
+			var bottomScore = 0;
 
+			var topPieces = board.PlayerPiecesBitboard(Player.Top);
+			var bottomPieces = board.PlayerPiecesBitboard(Player.Bottom);
 
+			for (var i = 1; i <= 5; i++)
+			{
+				topScore += Board.BitCount(topPieces & rowBits) * i;
+				bottomScore += Board.BitCount(bottomPieces & rowBits) * (6 - i);
 
-			return 0;
+				rowBits <<= 5;
+			}
+
+			return topScore - bottomScore;
 		}
 	}
 }
