@@ -133,8 +133,8 @@ namespace Onitama
 
 				// Check moves from both cards
 
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, tmpMoves);
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, tmpMoves);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1);
+				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2);
 			}
 
 			// Order moves by quality
@@ -158,7 +158,7 @@ namespace Onitama
 			}
 		}
 
-		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, List<Move> outMoves)
+		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card)
 		{
 			var destinations = Card.Definitions[card].destinations[(int)player, from];
 			var goalGate = player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
@@ -189,7 +189,7 @@ namespace Onitama
 					}
 
 					var move = new Move(card, from, dest, quality);
-					outMoves.Add(move);
+					tmpMoves.Add(move);
 				}
 			}
 		}
