@@ -12,6 +12,7 @@ namespace Onitama
 		public int NodesVisited { private set; get; }
 		public int QuiescenceNodesVisited { get; private set; }
 		public int MemHits { private set; get; }
+		public int BestMoveCutoff { private set; get; }
 		public int Value { private set; get; }
 		public DateTime StartTime { private set; get; }
 
@@ -55,6 +56,7 @@ namespace Onitama
 			NodesVisited = 0;
 			QuiescenceNodesVisited = 0;
 			MemHits = 0;
+			BestMoveCutoff = 0;
 
 			lastTimeoutCheck = 0;
 
@@ -148,11 +150,19 @@ namespace Onitama
 			var moves = moveLists[depth];
 			moves.Clear();
 
+			// Try only the best move first
+
+			bool generatedAllMoves = false;
+
 			if (ttEntry.HasValue)
 			{
 				moves.Add(ttBestMove);
 			}
-			state.AddValidMoves(moves);
+			else
+			{
+				state.AddValidMoves(moves);
+				generatedAllMoves = true;
+			}
 
 			int bestMoveIndex = -1;
 
@@ -162,10 +172,13 @@ namespace Onitama
 			{
 				var move = moves[i];
 
+				if (i > 0 && move.Equals(ttBestMove))	// Best move is always tested first, but generated again. Skip it!
+					continue;
+
 				var childState = state.ApplyMove(move);
 				int childValue;
 
-				if (i == 0)
+				if (i == 0)								// Principal Variation Search: try to prove that the best move is indeed the best
 				{
 					childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
 				}
@@ -193,7 +206,21 @@ namespace Onitama
 
 				if (Timeouted())
 					break;
+
+				// If the best move hasn't caused a cutoff, generate the rest of the moves here
+
+				if(!generatedAllMoves)
+				{
+					state.AddValidMoves(moves);
+					generatedAllMoves = true;
+				}
+
 			}
+
+			// Did we cutoff using only the best move?
+
+			if (moves.Count == 1)
+				BestMoveCutoff++;
 
 			// Save in transposition table
 
