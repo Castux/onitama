@@ -17,9 +17,19 @@ public static class Program
 		Console.WriteLine(game);
 		Console.WriteLine(" ");
 
-		var solver = new Solver(game, 14);
+		var solver = new Solver(game, 12);
+		solver.ComputeValue();
+
+		Console.WriteLine("Total time: " + (DateTime.Now - solver.StartTime).TotalMilliseconds / 1000f);
+
+		solver = new Solver(game, 12);
 		solver.ComputeValueIterative();
 
+		Console.WriteLine("Total time: " + (DateTime.Now - solver.StartTime).TotalMilliseconds / 1000f);
+
+
+
+		/*
 		Console.WriteLine("Total leaves visited: " + solver.LeavesVisited);
 		Console.WriteLine("Total nodes visited: " + solver.NodesVisited);
 		Console.WriteLine("Transposition table hits: " + solver.MemHits * 1f / solver.LeavesVisited * 100 + "%");
@@ -29,14 +39,10 @@ public static class Program
 		var moves = solver.PrincipalVariation();
 		foreach (var m in moves)
 		{
-			Console.WriteLine(game + "\n");
-
-			Console.WriteLine(m);
-			Console.WriteLine("\n==========");
-			
-			game = game.ApplyMove(m);
-			
+			Console.Write(m);
+			Console.Write(" | ");
 		}
+		*/
 
 	}
 }

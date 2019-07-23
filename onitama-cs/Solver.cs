@@ -11,15 +11,16 @@ namespace Onitama
 		public int NodesVisited { private set; get; }
 		public int MemHits { private set; get; }
 		public int Value { private set; get; }
+		public DateTime StartTime { private set; get; }
 
 		private GameState root;
 		private int maxDepth;
 		private List<List<Move>> moveLists;
 
-		public TranspositionTable table;
-
+		private TranspositionTable table;
 		private List<Move> tmpMoves;
-
+	
+		
 		public Solver(GameState game, int depth)
 		{
 			LeavesVisited = 0;
@@ -43,6 +44,8 @@ namespace Onitama
 
 		public void ComputeValue()
 		{
+			StartTime = DateTime.Now;
+
 			Value = ComputeValue(root, maxDepth, -MaxScore, MaxScore);
 		}
 
@@ -71,12 +74,14 @@ namespace Onitama
 
 		public void ComputeValueIterative()
 		{
+			StartTime = DateTime.Now;
+
 			var value = -int.MaxValue;
 
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
 				value = ComputeValue(root, depth, -MaxScore, MaxScore);
-				Console.WriteLine("Depth " + depth + ": " + value);
+				Console.WriteLine("Depth " + depth + ": " + value + " " + (DateTime.Now - StartTime).TotalSeconds);
 			}
 
 			Value = value;
@@ -200,8 +205,6 @@ namespace Onitama
 		private int ComputeLeafValue(GameState state)
 		{
 			LeavesVisited++;
-			if (LeavesVisited % 1000000 == 0)
-				Console.WriteLine("Leaves visited: " + LeavesVisited);
 
 			if (state.player == Player.Top)
 			{
