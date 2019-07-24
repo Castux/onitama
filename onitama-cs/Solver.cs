@@ -18,7 +18,8 @@ namespace Onitama
 		
 		private List<List<Move>> moveLists;
 
-		private TranspositionTable table;
+		private TranspositionTable table1;
+		private TranspositionTable table2;
 		private List<List<Move>> quiescenceMoves;
 		
 		public Solver(int maxDepth, TimeSpan? timeout, double ttSize = 2)
@@ -31,7 +32,8 @@ namespace Onitama
 			// Allocs
 
 			Stats = new Stats();
-			table = new TranspositionTable(gbytes: ttSize);
+			table1 = new TranspositionTable(gbytes: ttSize / 2);
+			table2 = new TranspositionTable(gbytes: ttSize / 2);
 
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= maxDepth; i++)
@@ -54,7 +56,10 @@ namespace Onitama
 			var g = root;
 			while(true)
 			{
-				var entry = table.Get(g);
+				var entry = table1.Get(g);
+				if (!entry.HasValue)
+					entry = table2.Get(g);
+
 				if(entry.HasValue)
 				{
 					var move = entry.Value.move;
@@ -112,7 +117,10 @@ namespace Onitama
 
 			Stats.TTLookup(ply);
 
-			var ttEntry = table.Get(state);
+			var ttEntry = table1.Get(state);
+			if (!ttEntry.HasValue)
+				ttEntry = table2.Get(state);
+
 			var ttBestMove = new Move();
 
 			if (ttEntry.HasValue)
@@ -250,7 +258,10 @@ namespace Onitama
 			else
 				flag = TranspositionTable.Flag.Exact;
 
-			table.Add(state, moves[bestMoveIndex], value, depth, flag);
+			if(!table1.AddIfHigherDepth(state, moves[bestMoveIndex], value, depth, flag))
+			{
+				table2.Add(state, moves[bestMoveIndex], value, depth, flag);
+			}
 
 			return value;
 		}

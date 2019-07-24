@@ -67,17 +67,6 @@ namespace Onitama
 			};
 		}
 
-		private Value? RawGet(ulong key)
-		{
-			var index = key & mask;
-			var entry = entries[index & lowMask][index >> lowBits];
-
-			if (entry.key == key)
-				return entry.value;
-
-			return null;
-		}
-
 		public void Add(GameState game, Move move, int value, int depth, Flag flag)
 		{
 			var entry = new Value
@@ -91,9 +80,29 @@ namespace Onitama
 			RawAdd(game.hash, entry);
 		}
 
+		public bool AddIfHigherDepth(GameState game, Move move, int value, int depth, Flag flag)
+		{
+			var index = game.hash & mask;
+			var oldEntry = entries[index & lowMask][index >> lowBits];
+
+			if(depth > oldEntry.value.depth)	// Also erases an empty entry (since depth is initialized to 0)
+			{
+				Add(game, move, value, depth, flag);
+				return true;
+			}
+
+			return false;
+		}
+
 		public Value? Get(GameState game)
 		{
-			return RawGet(game.hash);
+			var index = game.hash & mask;
+			var entry = entries[index & lowMask][index >> lowBits];
+
+			if (entry.key == game.hash)
+				return entry.value;
+
+			return null;
 		}
 	}
 }
