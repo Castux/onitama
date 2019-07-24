@@ -36,6 +36,7 @@
     <Compile Include="Cards.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="Positioning.cs" />
+    <Compile Include="Stats.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

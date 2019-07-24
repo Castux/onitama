@@ -8,18 +8,14 @@ namespace Onitama
 		public const int WinScore = 125;
 		public const int PawnScore = 25;
 
-		public int LeavesVisited { private set; get; }
-		public int NodesVisited { private set; get; }
-		public int QuiescenceNodesVisited { get; private set; }
-		public int MemHits { private set; get; }
-		public int BestMoveCutoff { private set; get; }
 		public int Value { private set; get; }
 		public DateTime StartTime { private set; get; }
+		public Stats Stats { private set; get; }
 
 		private GameState root;
 		private int maxDepth;
 		private TimeSpan timeout;
-
+		
 		private List<List<Move>> moveLists;
 
 		private TranspositionTable table;
@@ -34,6 +30,7 @@ namespace Onitama
 
 			// Allocs
 
+			Stats = new Stats();
 			table = new TranspositionTable(gbytes: ttSize);
 
 			moveLists = new List<List<Move>>();
@@ -48,15 +45,6 @@ namespace Onitama
 		public void Start(GameState state)
 		{
 			root = state;
-
-			// Stats
-
-			LeavesVisited = 0;
-			NodesVisited = 0;
-			QuiescenceNodesVisited = 0;
-			MemHits = 0;
-			BestMoveCutoff = 0;
-
 			IterativeSearch();
 		}
 
@@ -91,7 +79,7 @@ namespace Onitama
 
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
-				Value = ComputeValue(root, depth, -int.MaxValue, int.MaxValue);
+				Value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
 				Console.WriteLine("Depth " + depth + ": " + Value + " " + (DateTime.Now - StartTime).TotalSeconds);
 
 				if (Timeouted())
@@ -102,27 +90,32 @@ namespace Onitama
 			}
 		}
 
-		private int ComputeValue(GameState state, int depth, int alpha, int beta)
+		private int ComputeValue(GameState state, int depth, int ply, int alpha, int beta)
 		{
+			Stats.NodeVisited(ply);
+
 			if (depth == 0 || state.board.BottomWon() || state.board.TopWon())
 			{
+				Stats.LeafVisited(ply);
 				return QuiescenceSearch(state, alpha, beta, 0);
 			}
 
 			var startAlpha = alpha;
 
-			NodesVisited++;
-
 			// Check transposition table
 
+			Stats.TTLookup(ply);
 			var ttEntry = table.Get(state);
+
 			if (ttEntry.HasValue && ttEntry.Value.depth >= depth)
 			{
-				MemHits++;
+				Stats.TTHit(ply);
+
                 switch (ttEntry.Value.flag)
                 {
                     case TranspositionTable.Flag.Exact:
-                        return ttEntry.Value.value;
+						Stats.TTCutoff(ply);
+						return ttEntry.Value.value;
                     case TranspositionTable.Flag.Lower:
                         alpha = Math.Max(alpha, ttEntry.Value.value);
                         break;
@@ -131,8 +124,12 @@ namespace Onitama
                         break;
                 }
 
-                if (alpha >= beta)
+				if (alpha >= beta)
+				{
+					Stats.TTCutoff(ply);
+
 					return ttEntry.Value.value;
+				}
 			}
 
 			var ttBestMove = new Move();
@@ -165,6 +162,8 @@ namespace Onitama
 
 			// Do the thing!
 
+			Stats.Recursed(ply);
+
 			for (int i = 0; i < moves.Count; i++)
 			{
 				var move = moves[i];
@@ -172,19 +171,21 @@ namespace Onitama
 				if (i > 0 && move.Equals(ttBestMove))	// Best move is always tested first, but generated again. Skip it!
 					continue;
 
+				Stats.MoveExplored(ply);
+
 				var childState = state.ApplyMove(move);
 				int childValue;
 
 				if (i == 0)								// Principal Variation Search: try to prove that the best move is indeed the best
 				{
-					childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
+					childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
 				}
 				else
 				{
-					childValue = -ComputeValue(childState, depth - 1, -alpha-1, -alpha);
+					childValue = -ComputeValue(childState, depth - 1, ply + 1, -alpha-1, -alpha);
 
 					if(childValue > alpha && childValue < beta)
-						childValue = -ComputeValue(childState, depth - 1, -beta, -alpha);
+						childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
 				}
 
 				if (childValue > value)
@@ -216,8 +217,10 @@ namespace Onitama
 
 			// Did we cutoff using only the best move?
 
-			if (moves.Count == 1)
-				BestMoveCutoff++;
+			if (!generatedAllMoves)
+			{
+				Stats.BestMoveCutoff(ply);
+			}
 
 			// Save in transposition table
 
@@ -265,10 +268,7 @@ namespace Onitama
 
 		private int QuiescenceSearch(GameState state, int alpha, int beta, int depth)
 		{
-			if (depth == 0)
-				LeavesVisited++;
-			else
-				QuiescenceNodesVisited++;
+			Stats.QuiescenceNodeVisited();
 
 			var value = ComputeLeafValue(state);
 
@@ -282,7 +282,7 @@ namespace Onitama
 			moves.Clear();
 			state.AddValidMoves(moves, winAndCaptureOnly: true);
 
-			for(int i = 0; i < moves.Count; i++)
+			for (int i = 0; i < moves.Count; i++)
 			{
 				var m = moves[i];
 
