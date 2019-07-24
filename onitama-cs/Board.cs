@@ -93,7 +93,7 @@ namespace Onitama
 			var toBit = 1 << to;
 
 			var h = UpdateHash(from, to, fromBit, toBit);
-			
+
 			// Make new board
 
 			var res = new Board(
@@ -133,6 +133,44 @@ namespace Onitama
 			}
 
 			return res;
+		}
+
+		public static Board FromString(string s)
+		{
+			int bits = 1;
+			int tS = 0, tM = 0, bS = 0, bM = 0;
+
+			foreach(char c in s)
+			{
+				switch(c)
+				{
+					case 't':
+						tS |= bits;
+						bits <<= 1;
+						break;
+
+					case 'T':
+						tM |= bits;
+						bits <<= 1;
+						break;
+
+					case 'b':
+						bS |= bits;
+						bits <<= 1;
+						break;
+
+					case 'B':
+						bM |= bits;
+						bits <<= 1;
+						break;
+
+					case '.':
+						bits <<= 1;
+						break;
+				}
+			}
+
+			return new Board(tS, bS, tM, bM);
 		}
 
 		public static int BitCount(int i)

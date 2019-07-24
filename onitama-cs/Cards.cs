@@ -127,6 +127,22 @@ namespace Onitama
 			return new CardState(0, 1, 2, 3, 4);
 		}
 
+		private static byte CardIndex(string name)
+		{
+			for(byte i = 0; i < Card.Definitions.Length; i++)
+			{
+				if (name == Card.Definitions[i].Name)
+					return i;
+			}
+
+			throw new Exception("Unknown card " + name);
+		}
+
+		public static CardState FromNames(string a, string b, string c, string d, string e)
+		{
+			return new CardState(CardIndex(a), CardIndex(b), CardIndex(c), CardIndex(d), CardIndex(e));
+		}
+
 		public CardState Move(byte card)
 		{
 			if (topCard1 == card)
