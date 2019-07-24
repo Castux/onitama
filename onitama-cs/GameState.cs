@@ -44,7 +44,7 @@ namespace Onitama
 		public static string CellToCoords(byte cell)
 		{
 			var col = cell % 5;
-			var row = cell / 5 + 1;
+			var row = 5 - cell / 5;
 
 			return "" + (char)((byte)'a' + col) + row;
 		}
@@ -87,7 +87,7 @@ namespace Onitama
 				res += " [" + Card.Definitions[cards.nextCard].Name + "]";
 
 			res += '\n';
-			res += board;
+			res += board + "\n";
 
 			res += Card.Definitions[cards.bottomCard1].Name + " " + Card.Definitions[cards.bottomCard2].Name;
 			if (player == Player.Bottom)

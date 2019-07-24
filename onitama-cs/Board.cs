@@ -108,12 +108,12 @@ namespace Onitama
 
 		public override string ToString()
 		{
-			var res = "  abcde\n";
+			var res = "";
 
 			for (int i = 0; i < 25; i++)
 			{
 				if (i % 5 == 0)
-					res += (i / 5 + 1) + " ";
+					res += (5 - i / 5) + " ";
 
 				var bit = 1 << i;
 
@@ -132,7 +132,7 @@ namespace Onitama
 					res += '\n';
 			}
 
-			return res;
+			return res + "  abcde";
 		}
 
 		public static Board FromString(string s)
