@@ -16,7 +16,13 @@ namespace Onitama
 			Upper
 		}
 
-		public struct Entry
+		private struct Entry
+		{
+			public ulong key;
+			public Value value;
+		}
+
+		public struct Value
 		{
 			public Move move;
 			public sbyte value;
@@ -26,40 +32,39 @@ namespace Onitama
 
 		private uint mask;
 
-		private ulong[] keys;
-		private Entry[] values;
+		private Entry[] entries;
 
 		public TranspositionTable(int bits)
 		{
 			uint size = 1u << bits;
-			keys = new ulong[size];
-			values = new Entry[size];
+			entries = new Entry[size];
 
 			mask = size - 1;
-
-			Console.WriteLine("TT: " + size + "(" + keys.Length + ")");
 		}
 
-		private void RawAdd(ulong key, Entry value)
+		private void RawAdd(ulong key, Value value)
 		{
 			var index = key & mask;
-			keys[index] = key;
-			values[index] = value;
+			entries[index] = new Entry
+			{
+				key = key,
+				value = value
+			};
 		}
 
-		private Entry? RawGet(ulong key)
+		private Value? RawGet(ulong key)
 		{
 			var index = key & mask;
 
-			if (keys[index] == key)
-				return values[index];
+			if (entries[index].key == key)
+				return entries[index].value;
 
 			return null;
 		}
 
 		public void Add(GameState game, Move move, int value, int depth, Flag flag)
 		{
-			var entry = new Entry
+			var entry = new Value
 			{
 				move = move,
 				value = (sbyte)value,
@@ -70,7 +75,7 @@ namespace Onitama
 			RawAdd(game.hash, entry);
 		}
 
-		public Entry? Get(GameState game)
+		public Value? Get(GameState game)
 		{
 			return RawGet(game.hash);
 		}
