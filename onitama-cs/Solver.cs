@@ -111,36 +111,41 @@ namespace Onitama
 			// Check transposition table
 
 			Stats.TTLookup(ply);
-			var ttEntry = table.Get(state);
 
-			if (ttEntry.HasValue && ttEntry.Value.depth >= depth)
+			var ttEntry = table.Get(state);
+			var ttBestMove = new Move();
+
+			if (ttEntry.HasValue)
 			{
 				Stats.TTHit(ply);
 
-                switch (ttEntry.Value.flag)
-                {
-                    case TranspositionTable.Flag.Exact:
-						Stats.TTCutoff(ply);
-						return ttEntry.Value.value;
-                    case TranspositionTable.Flag.Lower:
-                        alpha = Math.Max(alpha, ttEntry.Value.value);
-                        break;
-                    case TranspositionTable.Flag.Upper:
-                        beta = Math.Min(beta, ttEntry.Value.value);
-                        break;
-                }
-
-				if (alpha >= beta)
+				if (ttEntry.Value.depth >= depth)
 				{
-					Stats.TTCutoff(ply);
+					Stats.TTGotValue(ply);
 
-					return ttEntry.Value.value;
+					switch (ttEntry.Value.flag)
+					{
+						case TranspositionTable.Flag.Exact:
+							Stats.TTCutoff(ply);
+							return ttEntry.Value.value;
+						case TranspositionTable.Flag.Lower:
+							alpha = Math.Max(alpha, ttEntry.Value.value);
+							break;
+						case TranspositionTable.Flag.Upper:
+							beta = Math.Min(beta, ttEntry.Value.value);
+							break;
+					}
+
+					if (alpha >= beta)
+					{
+						Stats.TTCutoff(ply);
+
+						return ttEntry.Value.value;
+					}
 				}
-			}
 
-			var ttBestMove = new Move();
-			if (ttEntry.HasValue)
 				ttBestMove = ttEntry.Value.move;
+			}
 
 			// TODO: see if we should pass state as reference? Is that even a thing?
 			// Negamax!

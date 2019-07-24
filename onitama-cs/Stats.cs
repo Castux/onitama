@@ -64,6 +64,12 @@ namespace Onitama
 			Ply(ply).ttHits++;
 		}
 
+		public void TTGotValue(int ply)
+		{
+			totals.ttGotValue++;
+			Ply(ply).ttGotValue++;
+		}
+
 		public void TTCutoff(int ply)
 		{
 			totals.ttCutoffs++;
@@ -113,10 +119,17 @@ namespace Onitama
 			}
 			Console.WriteLine();
 
-			Console.WriteLine("TT cutoffs: {0:f}%", totals.ttCutoffs * 100.0 / totals.ttHits);
+			Console.WriteLine("TT valuable hits: {0:f}%", totals.ttGotValue * 100.0 / totals.ttHits);
 			for (var ply = 0; ply < statsPerPly.Count; ply++)
 			{
-				Console.Write("{0}: {1:f}% ", ply, Ply(ply).ttCutoffs * 100.0 / Ply(ply).ttHits);
+				Console.Write("{0}: {1:f}% ", ply, Ply(ply).ttGotValue * 100.0 / Ply(ply).ttHits);
+			}
+			Console.WriteLine();
+
+			Console.WriteLine("TT cutoffs: {0:f}%", totals.ttCutoffs * 100.0 / totals.ttGotValue);
+			for (var ply = 0; ply < statsPerPly.Count; ply++)
+			{
+				Console.Write("{0}: {1:f}% ", ply, Ply(ply).ttCutoffs * 100.0 / Ply(ply).ttGotValue);
 			}
 			Console.WriteLine();
 
@@ -147,6 +160,7 @@ namespace Onitama
 
 		public int ttLookups;
 		public int ttHits;
+		public int ttGotValue;
 		public int ttCutoffs;
 
 		public int bestMoveCutoffs;
