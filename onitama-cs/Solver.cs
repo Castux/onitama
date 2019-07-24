@@ -19,7 +19,6 @@ namespace Onitama
 		private GameState root;
 		private int maxDepth;
 		private TimeSpan timeout;
-		private int lastTimeoutCheck;
 
 		private List<List<Move>> moveLists;
 
@@ -255,7 +254,7 @@ namespace Onitama
 			else
 			{
 				score = (state.board.TopStudentCount() - state.board.BottomStudentCount()) * PawnScore;
-				score += Positioning.TotalAdvance(state.board);
+				score += Positioning.Center(state.board);
 			}
 			
 			// Negate if it was Bottom's turn
@@ -310,13 +309,7 @@ namespace Onitama
 
 		private bool Timeouted()
 		{
-			if(NodesVisited - lastTimeoutCheck > 100000)
-			{
-				lastTimeoutCheck = NodesVisited;
-				return DateTime.Now - StartTime > timeout;
-			}
-
-			return false;
+			return DateTime.Now - StartTime > timeout;
 		}
 	}
 }
