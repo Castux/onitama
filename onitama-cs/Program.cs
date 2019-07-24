@@ -7,8 +7,7 @@ public static class Program
 	{
 		var game = GameState.Default();
 
-		var solver = new Solver(14, TimeSpan.FromSeconds(100000), ttSize: 2);
-		solver.Start(game);
+		var solver = new Solver(12, TimeSpan.FromSeconds(100000), ttSize: 0.1);
 
 		while (true)
 		{
@@ -19,6 +18,8 @@ public static class Program
 				break;
 
 			solver.Start(game);
+
+			Console.WriteLine("TT hits: " + solver.MemHits * 100f / solver.NodesVisited + "%");
 
 			Console.WriteLine("Value: " + solver.Value);
 			var move = solver.PrincipalVariation()[0];

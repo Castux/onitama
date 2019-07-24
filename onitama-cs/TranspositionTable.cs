@@ -36,9 +36,9 @@ namespace Onitama
 		private const int lowBits = 2;
 		private const int lowMask = 0b11;
 
-		public unsafe TranspositionTable(int gbytes)
+		public TranspositionTable(double gbytes)
 		{
-			var numEntries = (ulong)gbytes * 1024ul * 1024ul * 1024ul / 16ul;
+			var numEntries = (ulong)(gbytes * 1024ul * 1024ul * 1024ul / 16ul);
 			var numBits = (int)Math.Log(numEntries, 2);
 
 			numEntries = 1ul << numBits;
