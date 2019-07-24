@@ -46,8 +46,12 @@ namespace Onitama
 
 		public void Start(GameState state)
 		{
+			Stats.StartTimer();
+
 			root = state;
 			IterativeSearch();
+
+			Stats.StopTimer();
 		}
 
 		public List<Move> PrincipalVariation()
@@ -84,8 +88,12 @@ namespace Onitama
 
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
+				Console.WriteLine("=====");
+
 				Value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
 				Console.WriteLine("Depth " + depth + ": " + Value + " " + (DateTime.Now - StartTime).TotalSeconds);
+
+				Stats.Print();
 
 				if (Timeouted())
 					break;

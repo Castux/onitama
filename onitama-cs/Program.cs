@@ -7,9 +7,9 @@ public static class Program
 	{
 		var game = GameState.Default();
 
-		var solver = new Solver(20, null, ttSize: 1);
-		solver.Start(game);
-		solver.Stats.Print();
-		
+		Console.WriteLine(game);
+
+		var solver = new Solver(14, null, ttSize: 1);
+		solver.Start(game);	
 	}
 }
