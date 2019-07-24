@@ -25,7 +25,7 @@ namespace Onitama
 		private TranspositionTable table;
 		private List<List<Move>> quiescenceMoves;
 		
-		public Solver(int maxDepth, TimeSpan timeout)
+		public Solver(int maxDepth, TimeSpan timeout, int ttSize = 2)
 		{
 			// Parameters
 			
@@ -34,7 +34,7 @@ namespace Onitama
 
 			// Allocs
 
-			table = new TranspositionTable(26);
+			table = new TranspositionTable(gbytes: ttSize);
 
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= maxDepth; i++)

@@ -1,7 +1,5 @@
 ﻿using System;
 using Onitama;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 
 public static class Program
 {
@@ -9,7 +7,7 @@ public static class Program
 	{
 		var game = GameState.Default();
 
-		var solver = new Solver(10, TimeSpan.FromSeconds(15000));
+		var solver = new Solver(14, TimeSpan.FromSeconds(100000), ttSize: 2);
 		solver.Start(game);
 
 		while (true)
