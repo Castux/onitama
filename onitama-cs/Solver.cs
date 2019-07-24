@@ -14,14 +14,14 @@ namespace Onitama
 
 		private GameState root;
 		private int maxDepth;
-		private TimeSpan timeout;
+		private TimeSpan? timeout;
 		
 		private List<List<Move>> moveLists;
 
 		private TranspositionTable table;
 		private List<List<Move>> quiescenceMoves;
 		
-		public Solver(int maxDepth, TimeSpan timeout, double ttSize = 2)
+		public Solver(int maxDepth, TimeSpan? timeout, double ttSize = 2)
 		{
 			// Parameters
 			
@@ -94,7 +94,13 @@ namespace Onitama
 		{
 			Stats.NodeVisited(ply);
 
-			if (depth == 0 || state.board.BottomWon() || state.board.TopWon())
+			if(state.board.BottomWon() || state.board.TopWon())
+			{
+				Stats.LeafVisited(ply);
+				return ComputeLeafValue(state);
+			}
+
+			if (depth == 0)
 			{
 				Stats.LeafVisited(ply);
 				return QuiescenceSearch(state, alpha, beta, 0);
@@ -182,10 +188,16 @@ namespace Onitama
 				}
 				else
 				{
+					Stats.PVSAttempt(ply);
+
 					childValue = -ComputeValue(childState, depth - 1, ply + 1, -alpha-1, -alpha);
 
-					if(childValue > alpha && childValue < beta)
+					if (childValue > alpha && childValue < beta)
+					{
+						Stats.PVSRecompute(ply);
+
 						childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
+					}
 				}
 
 				if (childValue > value)
@@ -307,7 +319,12 @@ namespace Onitama
 
 		private bool Timeouted()
 		{
-			return DateTime.Now - StartTime > timeout;
+			if (timeout.HasValue)
+			{
+				return DateTime.Now - StartTime > timeout.Value;
+			}
+
+			return false;
 		}
 	}
 }

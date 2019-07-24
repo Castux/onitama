@@ -7,7 +7,7 @@ public static class Program
 	{
 		var game = GameState.Default();
 
-		var solver = new Solver(10, TimeSpan.FromSeconds(100000), ttSize: 1);
+		var solver = new Solver(20, null, ttSize: 1);
 		solver.Start(game);
 		solver.Stats.Print();
 		

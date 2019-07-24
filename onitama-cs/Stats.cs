@@ -21,6 +21,12 @@ namespace Onitama
 		{
 			totals.nodesVisited++;
 			Ply(ply).nodesVisited++;
+
+			if (totals.nodesVisited % 10000000 == 0)
+			{
+				Console.WriteLine("=========");
+				Print();
+			}
 		}
 
 		public void LeafVisited(int ply)
@@ -70,6 +76,18 @@ namespace Onitama
 			Ply(ply).bestMoveCutoffs++;
 		}
 
+		public void PVSAttempt(int ply)
+		{
+			totals.pvsAttempts++;
+			Ply(ply).pvsAttempts++;
+		}
+
+		public void PVSRecompute(int ply)
+		{
+			totals.pvsRecomputes++;
+			Ply(ply).pvsRecomputes++;
+		}
+
 		public void Print()
 		{
 			Console.WriteLine("Nodes visited: {0} ({1:f}% leaves)", totals.nodesVisited, totals.leavesVisited * 100.0 / totals.nodesVisited);
@@ -108,6 +126,13 @@ namespace Onitama
 				Console.Write("{0}: {1:f}% ", ply, Ply(ply).bestMoveCutoffs * 100.0 / Ply(ply).recursed);
 			}
 			Console.WriteLine();
+
+			Console.WriteLine("PVS recomputes: {0:f}%", totals.pvsRecomputes * 100.0 / totals.pvsAttempts);
+			for (var ply = 0; ply < statsPerPly.Count; ply++)
+			{
+				Console.Write("{0}: {1:f}% ", ply, Ply(ply).pvsRecomputes * 100.0 / Ply(ply).pvsAttempts);
+			}
+			Console.WriteLine();
 		}
 	}
 
@@ -125,5 +150,8 @@ namespace Onitama
 		public int ttCutoffs;
 
 		public int bestMoveCutoffs;
+
+		public int pvsAttempts;
+		public int pvsRecomputes;
 	}
 }
