@@ -57,13 +57,6 @@ namespace Onitama
 		public readonly Player player;
 		public readonly ulong hash;
 
-		private static List<Move> tmpMoves;
-
-		static GameState()
-		{
-			tmpMoves = new List<Move>();
-		}
-
 		public static GameState Default()
 		{
 			return new GameState(Board.InitialBoard(), CardState.Default(), Player.Bottom);
@@ -98,8 +91,6 @@ namespace Onitama
 
 		public void AddValidMoves(List<Move> outMoves, bool winAndCaptureOnly = false)
 		{
-			tmpMoves.Clear();
-
 			if (board.TopWon() || board.BottomWon())
 				return;
 
@@ -133,35 +124,12 @@ namespace Onitama
 
 				// Check moves from both cards
 
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, winAndCaptureOnly);
-				ValidMoves(ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, winAndCaptureOnly);
-			}
-
-			// Order moves by quality
-
-			for (int i = 0; i < tmpMoves.Count; i++)
-			{
-				if (tmpMoves[i].quality == (byte)MoveQuality.Win)
-					outMoves.Add(tmpMoves[i]);
-			}
-
-			for (int i = 0; i < tmpMoves.Count; i++)
-			{
-				if (tmpMoves[i].quality == (byte)MoveQuality.Capture)
-					outMoves.Add(tmpMoves[i]);
-			}
-
-			if (winAndCaptureOnly)
-				return;
-
-			for (int i = 0; i < tmpMoves.Count; i++)
-			{
-				if (tmpMoves[i].quality == (byte)MoveQuality.Normal)
-					outMoves.Add(tmpMoves[i]);
+				ValidMoves(outMoves, ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, winAndCaptureOnly);
+				ValidMoves(outMoves, ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, winAndCaptureOnly);
 			}
 		}
 
-		private void ValidMoves(int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, bool winAndCaptureOnly)
+		private void ValidMoves(List<Move> outMoves, int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, bool winAndCaptureOnly)
 		{
 			var destinations = Card.Definitions[card].destinations[(int)player, from];
 			var goalGate = player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
@@ -191,7 +159,7 @@ namespace Onitama
 					continue;
 
 				var move = new Move(card, from, dest, quality);
-				tmpMoves.Add(move);
+				outMoves.Add(move);
 			}
 		}
 

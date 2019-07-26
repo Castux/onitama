@@ -16,11 +16,8 @@ namespace Onitama
 		private int maxDepth;
 		private TimeSpan? timeout;
 		
-		private List<List<Move>> moveLists;
-
 		private TranspositionTable table1;
 		private TranspositionTable table2;
-		private List<List<Move>> quiescenceMoves;
 		
 		public Solver(int maxDepth, TimeSpan? timeout, double ttSize = 2)
 		{
@@ -34,14 +31,6 @@ namespace Onitama
 			Stats = new Stats();
 			table1 = new TranspositionTable(gbytes: ttSize / 2);
 			table2 = new TranspositionTable(gbytes: ttSize / 2);
-
-			moveLists = new List<List<Move>>();
-			for (int i = 0; i <= maxDepth; i++)
-				moveLists.Add(new List<Move>());
-
-			quiescenceMoves = new List<List<Move>>();
-			for (int i = 0; i < 20; i++)
-				quiescenceMoves.Add(new List<Move>());
 		}
 
 		public void Start(GameState state)
@@ -116,7 +105,7 @@ namespace Onitama
 			if (depth == 0)
 			{
 				Stats.LeafVisited(ply);
-				return QuiescenceSearch(state, alpha, beta, 0);
+				return QuiescenceSearch(state, alpha, beta, ply);
 			}
 
 			var startAlpha = alpha;
@@ -129,7 +118,7 @@ namespace Onitama
 			if (!ttEntry.HasValue)
 				ttEntry = table2.Get(state);
 
-			var ttBestMove = new Move();
+			Move? ttBestMove = null;
 
 			if (ttEntry.HasValue)
 			{
@@ -168,36 +157,16 @@ namespace Onitama
 
 			var value = int.MinValue;
 
-			var moves = moveLists[depth];
-			moves.Clear();
-
-			// Try only the best move first
-
-			bool generatedAllMoves = false;
-
-			if (ttEntry.HasValue)
-			{
-				moves.Add(ttBestMove);
-			}
-			else
-			{
-				state.AddValidMoves(moves);
-				generatedAllMoves = true;
-			}
-
-			int bestMoveIndex = -1;
+			var moveSorter = new MoveSorter(ply, state, ttBestMove);
+			var bestMove = new Move();
 
 			// Do the thing!
 
 			Stats.Recursed(ply);
 
-			for (int i = 0; i < moves.Count; i++)
+			int i = 0;
+			foreach(var move in moveSorter.Moves())
 			{
-				var move = moves[i];
-
-				if (i > 0 && move.Equals(ttBestMove))	// Best move is always tested first, but generated again. Skip it!
-					continue;
-
 				Stats.MoveExplored(ply);
 
 				var childState = state.ApplyMove(move);
@@ -206,6 +175,7 @@ namespace Onitama
 				if (i == 0)								// Principal Variation Search: try to prove that the best move is indeed the best
 				{
 					childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
+					i++;
 				}
 				else
 				{
@@ -224,7 +194,7 @@ namespace Onitama
 				if (childValue > value)
 				{
 					value = childValue;
-					bestMoveIndex = i;
+					bestMove = move;
 				}
 
 				if (value > alpha)
@@ -237,20 +207,11 @@ namespace Onitama
 
 				if (Timeouted())
 					break;
-
-				// If the best move hasn't caused a cutoff, generate the rest of the moves here
-
-				if(!generatedAllMoves)
-				{
-					state.AddValidMoves(moves);
-					generatedAllMoves = true;
-				}
-
 			}
 
 			// Did we cutoff using only the best move?
 
-			if (!generatedAllMoves)
+			if (!moveSorter.GeneratedAllMoves)
 			{
 				Stats.BestMoveCutoff(ply);
 			}
@@ -266,9 +227,9 @@ namespace Onitama
 			else
 				flag = TranspositionTable.Flag.Exact;
 
-			if(!table1.AddIfHigherDepth(state, moves[bestMoveIndex], value, depth, flag))
+			if(!table1.AddIfHigherDepth(state, bestMove, value, depth, flag))
 			{
-				table2.Add(state, moves[bestMoveIndex], value, depth, flag);
+				table2.Add(state, bestMove, value, depth, flag);
 			}
 
 			return value;
@@ -302,7 +263,7 @@ namespace Onitama
 			return score;
 		}
 
-		private int QuiescenceSearch(GameState state, int alpha, int beta, int depth)
+		private int QuiescenceSearch(GameState state, int alpha, int beta, int ply)
 		{
 			Stats.QuiescenceNodeVisited();
 
@@ -314,18 +275,14 @@ namespace Onitama
 			if (alpha >= beta)
 				return value;
 
-			var moves = quiescenceMoves[depth];
-			moves.Clear();
-			state.AddValidMoves(moves, winAndCaptureOnly: true);
+			var moveSorter = new MoveSorter(ply, state, null, winAndCaptureOnly: true);
 
-			for (int i = 0; i < moves.Count; i++)
-			{
-				var m = moves[i];
-
+			foreach(var m in moveSorter.Moves())
+			{ 
 				if(m.quality == (byte)MoveQuality.Win || m.quality == (byte)MoveQuality.Capture)
 				{
 					var childState = state.ApplyMove(m);
-					var childValue = -QuiescenceSearch(childState, -beta, -alpha, depth + 1);
+					var childValue = -QuiescenceSearch(childState, -beta, -alpha, ply + 1);
 
 					if (childValue > value)
 						value = childValue;
