@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 
 namespace Onitama
@@ -12,25 +13,36 @@ namespace Onitama
 		public DateTime StartTime { private set; get; }
 		public Stats Stats { private set; get; }
 
+		public bool interrupt = false;
+
 		private GameState root;
 		private int maxDepth;
-		private TimeSpan? timeout;
 		
 		private TranspositionTable table1;
 		private TranspositionTable table2;
 		
-		public Solver(int maxDepth, TimeSpan? timeout, double ttSize = 2)
+		public Solver(int maxDepth, double ttSize = 2)
 		{
 			// Parameters
 			
 			this.maxDepth = maxDepth;
-			this.timeout = timeout;
 
 			// Allocs
 
 			Stats = new Stats();
 			table1 = new TranspositionTable(gbytes: ttSize / 2);
 			table2 = new TranspositionTable(gbytes: ttSize / 2);
+		}
+
+		public void Start(GameState state, TimeSpan timeout)
+		{
+			var thread = new Thread(() => Start(state));
+			thread.Start();
+
+			Thread.Sleep(timeout);
+			interrupt = true;
+
+			thread.Join();
 		}
 
 		public void Start(GameState state)
@@ -84,7 +96,7 @@ namespace Onitama
 
 				Console.WriteLine();
 
-				if (Timeouted())
+				if (interrupt)
 					break;
 
 				if (Math.Abs(Value) == WinScore)
@@ -205,7 +217,7 @@ namespace Onitama
 				if (alpha >= beta)
 					break;
 
-				if (Timeouted())
+				if (interrupt)
 					break;
 			}
 
@@ -296,16 +308,6 @@ namespace Onitama
 			}
 
 			return value;
-		}
-
-		private bool Timeouted()
-		{
-			if (timeout.HasValue)
-			{
-				return DateTime.Now - StartTime > timeout.Value;
-			}
-
-			return false;
 		}
 	}
 }
