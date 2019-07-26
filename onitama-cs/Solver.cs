@@ -89,7 +89,11 @@ namespace Onitama
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
 				Value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
-				Console.WriteLine("Depth " + depth + ": " + Value + " " + (DateTime.Now - StartTime).TotalSeconds);
+				Console.Write("Depth {0}: {1} {2:0.00}\t", depth, Value, (DateTime.Now - StartTime).TotalSeconds);
+				foreach (var m in PrincipalVariation())
+					Console.Write(" | " + m);
+
+				Console.WriteLine();
 
 				if (Timeouted())
 					break;
