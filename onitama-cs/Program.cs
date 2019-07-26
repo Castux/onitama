@@ -11,9 +11,9 @@ public static class Program
 		var game = new GameState(board, cards, Player.Top);
 
 		Console.WriteLine(game);
+		var solver = new Solver(18, ttSize: 2);
 
-		var solver = new Solver(18, null, ttSize: 2);
-		solver.Start(game);
+		solver.Start(game, timeout: TimeSpan.FromSeconds(30));
 
 		solver.Stats.Print();
 	}

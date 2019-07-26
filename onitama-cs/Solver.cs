@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 
 namespace Onitama
@@ -12,9 +13,10 @@ namespace Onitama
 		public DateTime StartTime { private set; get; }
 		public Stats Stats { private set; get; }
 
+		public bool interrupt = false;
+
 		private GameState root;
 		private int maxDepth;
-		private TimeSpan? timeout;
 		
 		private List<List<Move>> moveLists;
 
@@ -22,12 +24,11 @@ namespace Onitama
 		private TranspositionTable table2;
 		private List<List<Move>> quiescenceMoves;
 		
-		public Solver(int maxDepth, TimeSpan? timeout, double ttSize = 2)
+		public Solver(int maxDepth, double ttSize = 2)
 		{
 			// Parameters
 			
 			this.maxDepth = maxDepth;
-			this.timeout = timeout;
 
 			// Allocs
 
@@ -42,6 +43,17 @@ namespace Onitama
 			quiescenceMoves = new List<List<Move>>();
 			for (int i = 0; i < 20; i++)
 				quiescenceMoves.Add(new List<Move>());
+		}
+
+		public void Start(GameState state, TimeSpan timeout)
+		{
+			var thread = new Thread(() => Start(state));
+			thread.Start();
+
+			Thread.Sleep(timeout);
+			interrupt = true;
+
+			thread.Join();
 		}
 
 		public void Start(GameState state)
@@ -95,7 +107,7 @@ namespace Onitama
 
 				Console.WriteLine();
 
-				if (Timeouted())
+				if (interrupt)
 					break;
 
 				if (Math.Abs(Value) == WinScore)
@@ -235,7 +247,7 @@ namespace Onitama
 				if (alpha >= beta)
 					break;
 
-				if (Timeouted())
+				if (interrupt)
 					break;
 
 				// If the best move hasn't caused a cutoff, generate the rest of the moves here
@@ -339,16 +351,6 @@ namespace Onitama
 			}
 
 			return value;
-		}
-
-		private bool Timeouted()
-		{
-			if (timeout.HasValue)
-			{
-				return DateTime.Now - StartTime > timeout.Value;
-			}
-
-			return false;
 		}
 	}
 }
