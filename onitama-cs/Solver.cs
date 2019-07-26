@@ -177,8 +177,14 @@ namespace Onitama
 			Stats.Recursed(ply);
 
 			int i = 0;
-			foreach(var move in moveSorter.Moves())
+			while(true)
 			{
+				var moveIndex = moveSorter.GetNextIndex();
+				if (moveIndex < 0)
+					break;
+
+				var move = moveSorter.GetMove(moveIndex);
+
 				Stats.MoveExplored(ply);
 
 				var childState = state.ApplyMove(move);
@@ -289,8 +295,14 @@ namespace Onitama
 
 			var moveSorter = new MoveSorter(ply, state, null, winAndCaptureOnly: true);
 
-			foreach(var m in moveSorter.Moves())
-			{ 
+			while(true)
+			{
+				var moveIndex = moveSorter.GetNextIndex();
+				if (moveIndex < 0)
+					break;
+
+				var m = moveSorter.GetMove(moveIndex);
+
 				if(m.quality == (byte)MoveQuality.Win || m.quality == (byte)MoveQuality.Capture)
 				{
 					var childState = state.ApplyMove(m);

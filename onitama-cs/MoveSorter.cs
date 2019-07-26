@@ -2,70 +2,106 @@
 
 namespace Onitama
 {
-	public class MoveSorter
+	public struct MoveSorter
 	{
-		private static List<List<Move>> lists;
+		private static List<List<Move>> allMoves;
+		private static List<List<long>> allScores;
 
 		static MoveSorter()
 		{
-			lists = new List<List<Move>>();
+			allMoves = new List<List<Move>>();
+			allScores = new List<List<long>>();
 		}
 
 		public bool GeneratedAllMoves { private set; get; }
 
 		private GameState state;
 		private Move? memoMove;
+		private bool generatedMemoMove;
 		private bool winAndCaptureOnly;
-		private List<Move> tmp;
+		private List<Move> moves;
+		private List<long> scores;
 
-		public MoveSorter(int depth, GameState state, Move? memoMove, bool winAndCaptureOnly = false)
+		public MoveSorter(int ply, GameState state, Move? memoMove, bool winAndCaptureOnly = false)
 		{
 			this.state = state;
 			this.memoMove = memoMove;
 			this.winAndCaptureOnly = winAndCaptureOnly;
 
+			generatedMemoMove = false;
 			GeneratedAllMoves = false;
 
-			while (lists.Count <= depth)
+			while (allMoves.Count <= ply)
 			{
-				lists.Add(new List<Move>());
+				allMoves.Add(new List<Move>());
+				allScores.Add(new List<long>());
 			}
 
-			tmp = lists[depth];
+			moves = allMoves[ply];
+			scores = allScores[ply];
 		}
 
-		public IEnumerable<Move> Moves()
+		public int GetNextIndex()
 		{
-			if(memoMove.HasValue)
+			if(memoMove.HasValue && !generatedMemoMove)
 			{
-				yield return memoMove.Value;
+				moves[0] = memoMove.Value;
+				generatedMemoMove = true;
+				return 0;
 			}
 
-			tmp.Clear();
-			state.AddValidMoves(tmp);
-
-			GeneratedAllMoves = true;
-
-			for (int i = 0; i < tmp.Count; i++)
+			if(!GeneratedAllMoves)
 			{
-				if (tmp[i].quality == (byte)MoveQuality.Win)
-					yield return tmp[i];
+				moves.Clear();
+				scores.Clear();
+
+				state.AddValidMoves(moves, winAndCaptureOnly);
+
+				for(int i = 0; i < moves.Count; i++)
+				{
+					switch ((MoveQuality)moves[i].quality)
+					{
+						case MoveQuality.Win:
+							scores.Add(long.MaxValue);
+							break;
+						case MoveQuality.Capture:
+							scores.Add(long.MaxValue - 1);
+							break;
+						case MoveQuality.Unknown:
+							scores.Add(long.MinValue);
+							break;
+						default:
+							scores.Add(0);
+							break;
+					}
+				}
+
+				GeneratedAllMoves = true;
 			}
 
-			for (int i = 0; i < tmp.Count; i++)
+			long maxScore = long.MinValue;
+			int maxIndex = int.MinValue;
+
+			for(int i = 0; i < moves.Count;i++)
 			{
-				if (tmp[i].quality == (byte)MoveQuality.Capture)
-					yield return tmp[i];
+				if(scores[i] > maxScore)
+				{
+					maxScore = scores[i];
+					maxIndex = i;
+				}
 			}
 
-			if (winAndCaptureOnly)
-				yield break;
-
-			for (int i = 0; i < tmp.Count; i++)
+			if(maxIndex >= 0)
 			{
-				if (tmp[i].quality == (byte)MoveQuality.Normal)
-					yield return tmp[i];
+				scores[maxIndex] = long.MinValue;
 			}
+
+			return maxIndex;
+		}
+
+		public Move GetMove(int i)
+		{
+			return moves[i];
 		}
 	}
 }
