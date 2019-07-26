@@ -159,21 +159,21 @@ namespace Onitama
 
 	public class PlyStats
 	{
-		public int nodesVisited;
-		public int leavesVisited;
-		public int quiescenceNodesVisited;
+		public long nodesVisited;
+		public long leavesVisited;
+		public long quiescenceNodesVisited;
 
-		public int recursed;
-		public int movesExplored;
+		public long recursed;
+		public long movesExplored;
 
-		public int ttLookups;
-		public int ttHits;
-		public int ttGotValue;
-		public int ttCutoffs;
+		public long ttLookups;
+		public long ttHits;
+		public long ttGotValue;
+		public long ttCutoffs;
 
-		public int bestMoveCutoffs;
+		public long bestMoveCutoffs;
 
-		public int pvsAttempts;
-		public int pvsRecomputes;
+		public long pvsAttempts;
+		public long pvsRecomputes;
 	}
 }
