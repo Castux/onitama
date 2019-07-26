@@ -20,6 +20,8 @@ namespace Onitama
 		
 		private TranspositionTable table1;
 		private TranspositionTable table2;
+
+		private long[,,] history;
 		
 		public Solver(int maxDepth, double ttSize = 2)
 		{
@@ -32,6 +34,8 @@ namespace Onitama
 			Stats = new Stats();
 			table1 = new TranspositionTable(gbytes: ttSize / 2);
 			table2 = new TranspositionTable(gbytes: ttSize / 2);
+
+			history = new long[2, 25, 25];
 		}
 
 		public void Start(GameState state, TimeSpan timeout)
@@ -169,7 +173,7 @@ namespace Onitama
 
 			var value = int.MinValue;
 
-			var moveSorter = new MoveSorter(ply, state, ttBestMove);
+			var moveSorter = new MoveSorter(ply, state, history, ttBestMove);
 			var bestMove = new Move();
 
 			// Do the thing!
@@ -221,7 +225,10 @@ namespace Onitama
 				}
 
 				if (alpha >= beta)
+				{
+					history[(int)state.player, move.from, move.to] += depth * depth;
 					break;
+				}
 
 				if (interrupt)
 					break;
@@ -293,7 +300,7 @@ namespace Onitama
 			if (alpha >= beta)
 				return value;
 
-			var moveSorter = new MoveSorter(ply, state, null, winAndCaptureOnly: true);
+			var moveSorter = new MoveSorter(ply, state, history, null, winAndCaptureOnly: true);
 
 			while(true)
 			{

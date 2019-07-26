@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Onitama
 {
@@ -16,15 +17,17 @@ namespace Onitama
 		public bool GeneratedAllMoves { private set; get; }
 
 		private GameState state;
+		private long[,,] history;
 		private Move? memoMove;
 		private bool generatedMemoMove;
 		private bool winAndCaptureOnly;
 		private List<Move> moves;
 		private List<long> scores;
 
-		public MoveSorter(int ply, GameState state, Move? memoMove, bool winAndCaptureOnly = false)
+		public MoveSorter(int ply, GameState state, long[,,] history, Move? memoMove, bool winAndCaptureOnly = false)
 		{
 			this.state = state;
+			this.history = history;
 			this.memoMove = memoMove;
 			this.winAndCaptureOnly = winAndCaptureOnly;
 
@@ -67,12 +70,11 @@ namespace Onitama
 						case MoveQuality.Capture:
 							scores.Add(long.MaxValue - 1);
 							break;
-						case MoveQuality.Unknown:
-							scores.Add(long.MinValue);
+						case MoveQuality.Normal:
+							scores.Add(history[(int)state.player, moves[i].from, moves[i].to]);
 							break;
 						default:
-							scores.Add(0);
-							break;
+							throw new Exception("Invalid move quality");
 					}
 				}
 
