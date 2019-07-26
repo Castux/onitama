@@ -226,7 +226,9 @@ namespace Onitama
 
 				if (alpha >= beta)
 				{
-					history[(int)state.player, move.from, move.to] += depth * depth;
+					if(move.quality == (byte) MoveQuality.Normal)
+						history[(int)state.player, move.from, move.to] += depth * depth;
+
 					break;
 				}
 
