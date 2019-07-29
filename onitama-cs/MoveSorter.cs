@@ -48,7 +48,8 @@ namespace Onitama
 		{
 			if(memoMove.HasValue && !generatedMemoMove)
 			{
-				moves[0] = memoMove.Value;
+				moves.Clear();
+				moves.Add(memoMove.Value);
 				generatedMemoMove = true;
 				return 0;
 			}
