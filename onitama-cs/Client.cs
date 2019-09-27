@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using Onitama;
 using System.Collections.Generic;
 
-public static class Program
+public static class Client
 {
 	static public void Main(string[] args)
 	{
