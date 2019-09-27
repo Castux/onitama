@@ -63,7 +63,11 @@ local function printState(game)
 	print "======\n"
 	print(onitama.stateToString(game))
 	print ""
-	
+
+	--for _,move in ipairs(onitama.validMoves(game)) do
+	--	print(moveToString(move))
+	--end
+
 end
 
 local function startGame(clients)
