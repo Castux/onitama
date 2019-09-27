@@ -93,6 +93,12 @@ public class Client
 			Console.WriteLine("=========");
 			Console.WriteLine(game);
 
+			if (game.board.TopWon() || game.board.BottomWon())
+			{
+				Console.WriteLine("Game over");
+				return;
+			}
+
 			if (us == game.player)
 			{
 				PlayOurTurn();
@@ -114,15 +120,14 @@ public class Client
 		// Play the first one :D
 
 		var move = moves[0];
-		var str = move.ToString();
+		var str = move.ToString(includeQuality: false);
 
-		Console.WriteLine("We are playing " + str);
+		Console.WriteLine("We are playing: " + str);
 		server.Send(str);
 
 		// We should receive the confirmation
 
 		str = server.Receive();
-		Console.WriteLine("Server said:" + str);
 
 		// Apply move
 
@@ -135,11 +140,53 @@ public class Client
 
 		var str = server.Receive();
 
-		Console.WriteLine("Other player did: " + str);
+		Console.WriteLine("Other player plays: " + str);
 
-		System.Environment.Exit(0);
+		var move = ParseMove(str);
+		game = game.ApplyMove(move);
 	}
-}
+
+	private static int ColumnNumber(string s)
+	{
+		switch(s)
+		{
+			case "a":
+				return 0;
+			case "b":
+				return 1;
+			case "c":
+				return 2;
+			case "d":
+				return 3;
+			case "e":
+				return 4;
+			default:
+				throw new Exception("Invalid column:" + s);
+		}
+	}
+
+	private Move ParseMove(string s)
+	{
+		var match = Regex.Match(s, @"(\w+) (\w)(\d) (\w)(\d)");
+
+		if(!match.Success)
+		{
+			throw new Exception("Could not parse move: " + s);
+		}
+
+		var cardName = match.Groups[1].Value;
+		var ocol = ColumnNumber(match.Groups[2].Value);
+		var orow = int.Parse(match.Groups[3].Value) - 1;
+		var dcol = ColumnNumber(match.Groups[4].Value);
+		var drow = int.Parse(match.Groups[5].Value) - 1;
+
+		var card = Card.Index(cardName);
+		var origin = orow * 5 + ocol;
+		var dest = drow * 5 + dcol;
+
+		return new Move(card, (byte)origin, (byte)dest);
+	}
+ }
 
 public static class Program
 {
