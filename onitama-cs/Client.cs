@@ -6,32 +6,56 @@ using System.Net.Sockets;
 using Onitama;
 using System.Collections.Generic;
 
-public static class Client
+public class Server
 {
-	static public void Main(string[] args)
+	private TcpClient client;
+	private StreamReader reader;
+	private StreamWriter writer;
+
+	public Server(string address, int port)
 	{
-		if(args.Length < 2)
-		{
-			Console.WriteLine("Usage: mono Program.exe <server> <port>");
-			return;
-		}
+		client = new TcpClient(address, port);
+		reader = new StreamReader(client.GetStream());
+		writer = new StreamWriter(client.GetStream());
+	}
 
-		var address = args[0];
-		var port = int.Parse(args[1]);
+	public void Send(string s)
+	{
+		writer.WriteLine(s);
+		writer.Flush();
+	}
 
-		using var client = new TcpClient(address, port);
-		using var reader = new StreamReader(client.GetStream());
+	public string Receive()
+	{
+		return reader.ReadLine();
+	}
+}
 
+public class Client
+{
+	private Server server;
+	private GameState game;
+	private Player us;
+	private int timeout;
+
+	public Client(Server server, int timeout)
+	{
+		this.timeout = timeout;
+		this.server = server;
+	}
+
+	public void Setup()
+	{
 		// Who are we?
 
-		var tmp = reader.ReadLine();
-		var player = tmp == "You are Top" ? Player.Top : Player.Bottom;
+		var tmp = server.Receive();
+		us = tmp == "You are Top" ? Player.Top : Player.Bottom;
 
-		Console.WriteLine("We are " + player);
+		Console.WriteLine("We are " + us);
 
 		// What are the cards?
 
-		tmp = reader.ReadLine();
+		tmp = server.Receive();
 		var match = Regex.Match(tmp, @"Cards: (\w+),(\w+),(\w+),(\w+),(\w+)");
 		if (!match.Success)
 		{
@@ -40,7 +64,7 @@ public static class Client
 		}
 
 		var cardNames = new List<string>();
-		for(int i = 1; i < match.Groups.Count; i++)
+		for (int i = 1; i < match.Groups.Count; i++)
 		{
 			cardNames.Add(match.Groups[i].Value);
 		}
@@ -49,7 +73,7 @@ public static class Client
 
 		// Who starts?
 
-		tmp = reader.ReadLine();
+		tmp = server.Receive();
 		var startPlayer = tmp == "Top starts" ? Player.Top : Player.Bottom;
 
 		Console.WriteLine("Starting player is " + startPlayer);
@@ -59,13 +83,82 @@ public static class Client
 		var board = Board.FromString("ttTtt ..... ..... ..... bbBbb");
 		var cards = CardState.FromNames(cardNames[0], cardNames[1], cardNames[2], cardNames[3], cardNames[4]);
 
-		var game = new GameState(board, cards, startPlayer);
+		game = new GameState(board, cards, startPlayer);
+	}
 
-		Console.WriteLine(game);
-		//var solver = new Solver(1000, ttSize: 8);
+	public void Run()
+	{
+		while (true)
+		{
+			Console.WriteLine("=========");
+			Console.WriteLine(game);
 
-		//solver.Start(game);
+			if (us == game.player)
+			{
+				PlayOurTurn();
+			}
+			else
+			{
+				WaitForTheirTurn();
+			}
+		}
+	}
 
-		//solver.Stats.Print();
+	private void PlayOurTurn()
+	{
+		// Our turn
+
+		var moves = new List<Move>();
+		game.AddValidMoves(moves);
+
+		// Play the first one :D
+
+		var move = moves[0];
+		var str = move.ToString();
+
+		Console.WriteLine("We are playing " + str);
+		server.Send(str);
+
+		// We should receive the confirmation
+
+		str = server.Receive();
+		Console.WriteLine("Server said:" + str);
+
+		// Apply move
+
+		game = game.ApplyMove(move);
+	}
+
+	private void WaitForTheirTurn()
+	{
+		// Their turn
+
+		var str = server.Receive();
+
+		Console.WriteLine("Other player did: " + str);
+
+		System.Environment.Exit(0);
+	}
+}
+
+public static class Program
+{
+	static public void Main(string[] args)
+	{
+		if(args.Length < 3)
+		{
+			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout>");
+			return;
+		}
+
+		var address = args[0];
+		var port = int.Parse(args[1]);
+		var timeout = int.Parse(args[2]);
+
+		var server = new Server(address, port);
+		var client = new Client(server, timeout);
+
+		client.Setup();
+		client.Run();		
 	}
 }
