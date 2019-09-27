@@ -26,9 +26,9 @@ local function moveToString(move)
 		columnNames[move.to[2]] .. move.to[1]
 end
 
-local function startServer()
+local function startServer(PORT)
 
-	local PORT = 8000
+	local PORT = PORT or 8000
 	local server = socket.bind("*", PORT)
 
 	if not server then
@@ -43,6 +43,7 @@ local function startServer()
 
 		local client = server:accept()
 		local ip,port = client:getpeername()
+		client:settimeout(0.1)
 
 		table.insert(clients, client)
 
@@ -51,6 +52,7 @@ local function startServer()
 
 		print(playerName(player) .. " player connected: " .. ip)
 		client:send("You are " .. playerName(player) .. "\n")
+		
 	end
 
 	return clients
@@ -61,11 +63,7 @@ local function printState(game)
 	print "======\n"
 	print(onitama.stateToString(game))
 	print ""
-
-	for _,move in ipairs(onitama.validMoves(game)) do
-		--print(moveToString(move))
-	end
-
+	
 end
 
 local function startGame(clients)
@@ -156,7 +154,7 @@ local function handleInput(game, from, msg, clients)
 				return "abort"
 			end
 			
-			return
+			return "played"
 		end
 	end
 	
@@ -164,13 +162,18 @@ local function handleInput(game, from, msg, clients)
 	return "abort"
 end
 
-local function run(game, clients)
+local function run(game, clients, timeout)
+
+	local turnStart = os.time()
 
 	while true do
+		
+		if os.time() - turnStart > timeout then
+			print(playerName(clients[client]) .. " took too long to play")
+			return
+		end
 
-		local ready = socket.select(clients, nil, nil, 1)
-
-		for i,client in ipairs(ready) do
+		for i,client in ipairs(clients) do
 
 			local msg, err = client:receive("*l")
 
@@ -187,6 +190,10 @@ local function run(game, clients)
 				if status == "abort" then
 					return
 				end
+				
+				if status == "played" then
+					turnStart = os.time()
+				end
 			end
 
 		end
@@ -195,13 +202,20 @@ local function run(game, clients)
 
 end
 
-function main()
+function main(args)
 
-	local clients = startServer()
-
+	if not args[1] or not args[2] then
+		print("Usage: lua judge.lua <port> <timeout>")
+		return
+	end
+	
+	local timeout = tonumber(args[2])
+	print("Timeout set to " .. timeout .. " seconds")
+	
+	local clients = startServer(args[1])
 	local game = startGame(clients)
-	run(game, clients)
+	run(game, clients, timeout)
 
 end
 
-main()
+main({...})
