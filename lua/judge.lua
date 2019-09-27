@@ -169,7 +169,7 @@ local function run(game, clients, timeout)
 	while true do
 		
 		if os.time() - turnStart > timeout then
-			print(playerName(clients[client]) .. " took too long to play")
+			print(playerName(game.currentPlayer) .. " took too long to play")
 			return
 		end
 
