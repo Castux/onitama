@@ -1,6 +1,10 @@
 local socket = require "socket"
 local onitama = require "onitama"
 
+local function playerName(player)
+	return player == onitama.Top and "Top" or "Bottom"
+end
+
 local function startServer()
 
 	local PORT = 8000
@@ -21,8 +25,11 @@ local function startServer()
 
 		table.insert(clients, client)
 
-		local playerName = #clients == 1 and "Top" or "Bottom"
-		print(playerName .. " player connected: " .. ip)
+		local player = #clients == 1 and onitama.Top or onitama.Bottom
+		clients[client] = player
+
+		print(playerName(player) .. " player connected: " .. ip)
+		client:send("You are " .. playerName(player) .. "\n")
 	end
 
 	return clients
@@ -33,6 +40,10 @@ local function printState(game)
 	print "======\n"
 	print(onitama.stateToString(game))
 	print ""
+
+	for _,move in ipairs(onitama.validMoves(game)) do
+		print(onitama.moveToString(move))
+	end
 
 end
 
@@ -54,8 +65,6 @@ local function startGame(clients)
 
 	local startPlayer = math.random(2)
 
-	print((startPlayer == 1 and "Top" or "Bottom") .. " player starts!")
-
 	local game = onitama.StartState
 
 	game.topCards[1] = selected[1]
@@ -66,24 +75,85 @@ local function startGame(clients)
 	
 	game.currentPlayer = startPlayer == 1 and onitama.Top or onitama.Bottom
 
-	for i,client in ipairs(clients) do
-		
-		local ownCards = i == 1 and game.topCards or game.bottomCards
-		local opponentCards = i == 2 and game.topCards or game.bottomCards
-		
-		local msg =
-			"Own: " .. table.concat(ownCards, ",") .. "\n" ..
-			"Opponent: " .. table.concat(opponentCards, ",") .. "\n" ..
+	local msg = "Top: " .. table.concat(game.topCards, ",") .. "\n" ..
+			"Bottom: " .. table.concat(game.bottomCards, ",") .. "\n" ..
 			"Middle: " .. game.nextCard .. "\n" ..
-			(i == startPlayer and "start" or "wait") .. "\n"
-		
+			playerName(game.currentPlayer) .. " starts\n"
+
+	for i,client in ipairs(clients) do
 		client:send(msg)
 	end
-
+	
+	print(playerName(game.currentPlayer) .. " starts")
 	printState(game)
+	
+	return game
 end
 
-local function run(clients)
+local columnNames =
+{
+	a = 1,
+	b = 2,
+	c = 3,
+	d = 4,
+	e = 5
+}
+
+local function handleInput(game, from, msg)
+	
+	-- Check current player
+	
+	if game.currentPlayer ~= from then
+		print(playerName(from) .. " player (not their turn) says: " .. msg)
+		return
+	end
+	
+	-- Parse input
+	
+	local card, ocol, orow, dcol, drow = msg:match("^(%w+) (%a)(%d) (%a)(%d)$")
+	
+	if not (card and ocol and orow and dcol and drow) then
+		print(playerName(from) .. " player (on their turn) says: " .. msg)	
+		return
+	end
+	
+	-- Columns to numbers
+	
+	ocol = columnNames[ocol]
+	dcol = columnNames[dcol]
+	
+	-- Move validity
+	
+	for _,move in ipairs(onitama.validMoves(game)) do
+		
+		if move.card == card and
+			move.from[1] == orow and
+			move.from[2] == ocol and
+			move.to[1] == drow and
+			move.to[2] == dcol then
+			
+			print(playerName(from) .. " player plays ", msg)
+			
+			onitama.applyMove(game, move)
+			printState(game)
+			
+			for _,client in ipairs(clients) do
+				client:send(msg)
+			end
+			
+			if getWinner(state) then
+				return "abort"
+			end
+			
+			return
+		end
+	end
+	
+	print(playerName(from) .. " player submitted an invalid move: ", msg)
+	return "abort"
+end
+
+local function run(game, clients)
 
 	while true do
 
@@ -95,14 +165,17 @@ local function run(clients)
 
 			if err == "closed" then
 
-				print("Player " .. i .. " dropped")
-				print("Player " .. (i%2 + 1) .. " wins")
+				print(playerName(clients[client]) .. " player dropped")
 				return
 
 			elseif err == "timeout" then
 
 			else
-				print("Player " .. i .. " says: " .. msg)
+				local status = handleInput(game, clients[client], msg)
+				
+				if status == "abort" then
+					return
+				end
 			end
 
 		end
@@ -115,8 +188,8 @@ function main()
 
 	local clients = startServer()
 
-	startGame(clients)
-	run(clients)
+	local game = startGame(clients)
+	run(game, clients)
 
 end
 
