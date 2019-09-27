@@ -95,11 +95,9 @@ local function startGame(clients)
 	game.nextCard = selected[5]
 	
 	game.currentPlayer = startPlayer == 1 and onitama.Top or onitama.Bottom
-
-	local msg = "Top: " .. table.concat(game.topCards, ",") .. "\n" ..
-			"Bottom: " .. table.concat(game.bottomCards, ",") .. "\n" ..
-			"Middle: " .. game.nextCard .. "\n" ..
-			playerName(game.currentPlayer) .. " starts\n"
+	
+	local msg = "Cards: " .. table.concat(selected, ",") .. "\n" ..
+		playerName(game.currentPlayer) .. " starts\n"
 
 	for i,client in ipairs(clients) do
 		client:send(msg)
