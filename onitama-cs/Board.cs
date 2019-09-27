@@ -113,7 +113,7 @@ namespace Onitama
 			for (int i = 0; i < 25; i++)
 			{
 				if (i % 5 == 0)
-					res += (5 - i / 5) + " ";
+					res += (i / 5 + 1) + " ";
 
 				var bit = 1 << i;
 

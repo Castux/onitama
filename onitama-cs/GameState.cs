@@ -44,7 +44,7 @@ namespace Onitama
 		public static string CellToCoords(byte cell)
 		{
 			var col = cell % 5;
-			var row = 5 - cell / 5;
+			var row = cell / 5 + 1;
 
 			return "" + (char)((byte)'a' + col) + row;
 		}

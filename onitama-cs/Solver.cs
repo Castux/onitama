@@ -13,7 +13,7 @@ namespace Onitama
 		public DateTime StartTime { private set; get; }
 		public Stats Stats { private set; get; }
 
-		public bool interrupt = false;
+		private bool interrupt = false;
 
 		private GameState root;
 		private int maxDepth;
