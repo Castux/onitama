@@ -34,7 +34,7 @@
     <Compile Include="Hash.cs" />
     <Compile Include="TranspositionTable.cs" />
     <Compile Include="Solver.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Client.cs" />
     <Compile Include="Cards.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="Positioning.cs" />
