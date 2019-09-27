@@ -64,9 +64,12 @@ local function printState(game)
 	print(onitama.stateToString(game))
 	print ""
 
-	--for _,move in ipairs(onitama.validMoves(game)) do
-	--	print(moveToString(move))
-	--end
+	io.write("Valid moves: ")
+
+	local moves = onitama.validMoves(game)
+	for i,move in ipairs(moves) do
+		io.write(moveToString(move), i == #moves and "\n" or " / ")
+	end
 
 end
 
