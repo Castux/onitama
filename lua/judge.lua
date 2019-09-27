@@ -5,6 +5,27 @@ local function playerName(player)
 	return player == onitama.Top and "Top" or "Bottom"
 end
 
+local columnNames =
+{
+	a = 1,
+	b = 2,
+	c = 3,
+	d = 4,
+	e = 5,
+	[1] = "a",
+	[2] = "b",
+	[3] = "c",
+	[4] = "d",
+	[5] = "e"
+}
+
+local function moveToString(move)
+	return move.card .. " " ..
+		columnNames[move.from[2]] .. move.from[1] ..
+		" " ..
+		columnNames[move.to[2]] .. move.to[1]
+end
+
 local function startServer()
 
 	local PORT = 8000
@@ -42,7 +63,7 @@ local function printState(game)
 	print ""
 
 	for _,move in ipairs(onitama.validMoves(game)) do
-		print(onitama.moveToString(move))
+		--print(moveToString(move))
 	end
 
 end
@@ -90,16 +111,7 @@ local function startGame(clients)
 	return game
 end
 
-local columnNames =
-{
-	a = 1,
-	b = 2,
-	c = 3,
-	d = 4,
-	e = 5
-}
-
-local function handleInput(game, from, msg)
+local function handleInput(game, from, msg, clients)
 	
 	-- Check current player
 	
@@ -113,12 +125,13 @@ local function handleInput(game, from, msg)
 	local card, ocol, orow, dcol, drow = msg:match("^(%w+) (%a)(%d) (%a)(%d)$")
 	
 	if not (card and ocol and orow and dcol and drow) then
-		print(playerName(from) .. " player (on their turn) says: " .. msg)	
+		print(playerName(from) .. " player says: " .. msg)	
 		return
 	end
 	
-	-- Columns to numbers
-	
+	-- To numbers
+	orow = tonumber(orow)
+	drow = tonumber(drow)
 	ocol = columnNames[ocol]
 	dcol = columnNames[dcol]
 	
@@ -138,10 +151,10 @@ local function handleInput(game, from, msg)
 			printState(game)
 			
 			for _,client in ipairs(clients) do
-				client:send(msg)
+				client:send(msg .. "\n")
 			end
 			
-			if getWinner(state) then
+			if onitama.getWinner(game) then
 				return "abort"
 			end
 			
@@ -171,7 +184,7 @@ local function run(game, clients)
 			elseif err == "timeout" then
 
 			else
-				local status = handleInput(game, clients[client], msg)
+				local status = handleInput(game, clients[client], msg, clients)
 				
 				if status == "abort" then
 					return
