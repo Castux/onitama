@@ -192,20 +192,31 @@ public static class Program
 {
 	static public void Main(string[] args)
 	{
-		if(args.Length < 3)
+		string address;
+		int port;
+		int timeout;
+
+		if (args.Length < 3)
 		{
 			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout>");
-			return;
+			Console.WriteLine("Using defaults: 127.0.0.1:8000, 20 seconds");
+			address = "127.0.0.1";
+			port = 8000;
+			timeout = 20;
 		}
-
-		var address = args[0];
-		var port = int.Parse(args[1]);
-		var timeout = int.Parse(args[2]);
+		else
+		{
+			address = args[0];
+			port = int.Parse(args[1]);
+			timeout = int.Parse(args[2]);
+		}
 
 		var server = new Server(address, port);
 		var client = new Client(server, timeout);
 
 		client.Setup();
-		client.Run();		
+		client.Run();
+
+		Console.ReadLine();
 	}
 }
