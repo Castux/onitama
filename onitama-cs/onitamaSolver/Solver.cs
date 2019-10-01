@@ -20,6 +20,7 @@ namespace Onitama
 		private List<List<Move>> moveLists;
 
 		private TwoTieredTable table;
+		private StateLocker locker;
 		private List<List<Move>> quiescenceMoves;
 
 
@@ -28,12 +29,13 @@ namespace Onitama
 		{
 		}
 
-		public Solver(int maxDepth, TwoTieredTable table)
+		public Solver(int maxDepth, TwoTieredTable table, StateLocker locker = null)
 		{
 			// Parameters
 			
 			this.maxDepth = maxDepth;
 			this.table = table;
+			this.locker = locker;
 
 			// Allocs
 

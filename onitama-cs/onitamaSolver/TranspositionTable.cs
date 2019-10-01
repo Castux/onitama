@@ -28,8 +28,8 @@ namespace Onitama
 		private ulong mask;
 
 		private Entry[][] entries;
-		private const int lowBits = 2;
-		private const int lowMask = 0b11;
+		private const int lowBits = 4;
+		private const int lowMask = 0b1111;
 
 		public TranspositionTable(double gbytes)
 		{

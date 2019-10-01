@@ -12,7 +12,7 @@ public static class Tester
 		if(args.Length < 6)
 		{
 			Console.WriteLine("Usage: mono onitamaTester.exe <board> <cards> <startPlayer> <depth> <timeout> <ttsize>");
-			return;
+			Exit();
 		}
 
 		var boardString = args[0];
@@ -30,7 +30,7 @@ public static class Tester
 		if (!match.Success)
 		{
 			Console.WriteLine("Failed to parse cards: " + cards);
-			return;
+			Exit();
 		}
 
 		var cardNames = new List<string>();
@@ -63,5 +63,13 @@ public static class Tester
 
 		Console.WriteLine("Best move: " + solver.BestMove());
 		solver.Stats.Print();
+
+		Exit();
+	}
+
+	public static void Exit()
+	{
+		Console.ReadLine();
+		Environment.Exit(0);
 	}
 }
