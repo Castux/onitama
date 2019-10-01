@@ -57,7 +57,8 @@ public static class Tester
 
 		// GOGOGO
 
-		var solver = new Solver(depth, ttsize);
+		var solver = new ThreadedSolver(4, depth, ttsize);
+		//var solver = new Solver(depth, ttsize);
 		solver.Run(gameState, timeout);
 
 		Console.WriteLine("Best move: " + solver.BestMove());
