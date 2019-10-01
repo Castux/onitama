@@ -2,6 +2,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>default Goose,Dragon,Ox,Tiger,Frog Top 15 10000 8</StartArguments>
+    <StartArguments>default Goose,Dragon,Ox,Tiger,Frog Top 15 10000 12</StartArguments>
   </PropertyGroup>
 </Project>

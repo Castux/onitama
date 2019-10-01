@@ -2,7 +2,6 @@
 
 namespace Onitama
 {
-
 	public class TranspositionTable
 	{
 		public enum Flag : byte
@@ -122,6 +121,35 @@ namespace Onitama
 				return entry.value;
 			
 			return null;
+		}
+	}
+
+	public struct TwoTieredTable
+	{
+		private readonly TranspositionTable table1;
+		private readonly TranspositionTable table2;
+
+		public TwoTieredTable(double gbytes)
+		{
+			table1 = new TranspositionTable(gbytes / 2.0);
+			table2 = new TranspositionTable(gbytes / 2.0);
+		}
+
+		public TranspositionTable.Value? Get(GameState g)
+		{
+			var entry = table1.Get(g);
+			if (!entry.HasValue)
+				entry = table2.Get(g);
+
+			return entry;
+		}
+
+		public void Add(GameState state, Move move, int value, int depth, TranspositionTable.Flag flag)
+		{
+			if (!table1.AddIfHigherDepth(state, move, value, depth, flag))
+			{
+				table2.Add(state, move, value, depth, flag);
+			}
 		}
 	}
 }
