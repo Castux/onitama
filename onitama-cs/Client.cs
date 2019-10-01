@@ -44,13 +44,15 @@ public class Client
 	private GameState game;
 	private Player us;
 	private TimeSpan timeout;
+	private bool lookahead;
 
 	private Solver solver;
 
-	public Client(Server server, int timeout)
+	public Client(Server server, int timeout, bool lookahead)
 	{
 		this.timeout = TimeSpan.FromSeconds(timeout - 1.0);
 		this.server = server;
+		this.lookahead = lookahead;
 	}
 
 	public void Setup(int ttsize)
@@ -146,9 +148,15 @@ public class Client
 
 	private void WaitForTheirTurn()
 	{
-		// Their turn
+		// Run the solver for their side too, to start looking ahead
+
+		if(lookahead)
+			solver.RunInBackground(game);
 
 		var str = server.Receive();
+
+		if(lookahead)
+			solver.InterruptBackground();
 
 		Console.WriteLine("Other player plays: " + str);
 
@@ -206,15 +214,17 @@ public static class Program
 		int port;
 		int timeout;
 		int ttsize;
+		bool lookahead;
 
-		if (args.Length < 4)
+		if (args.Length < 5)
 		{
-			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout> <ttsize>");
-			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds, 2 GB transp. table");
+			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout> <ttsize> <lookahead>");
+			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds, 2 GB transp. table, do lookahead");
 			address = "127.0.0.1";
 			port = 8000;
 			timeout = 15;
 			ttsize = 2;
+			lookahead = true;
 		}
 		else
 		{
@@ -222,12 +232,13 @@ public static class Program
 			port = int.Parse(args[1]);
 			timeout = int.Parse(args[2]);
 			ttsize = int.Parse(args[3]);
+			lookahead = args[4] == "lookahead";
 		}
 
 		try
 		{
 			var server = new Server(address, port);
-			var client = new Client(server, timeout);
+			var client = new Client(server, timeout, lookahead);
 
 			client.Setup(ttsize);
 			client.Run();

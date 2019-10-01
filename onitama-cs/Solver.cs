@@ -14,6 +14,7 @@ namespace Onitama
 		public Stats Stats { private set; get; }
 
 		private bool interrupt = false;
+		private Thread thread;
 
 		private GameState root;
 		private int maxDepth;
@@ -47,14 +48,24 @@ namespace Onitama
 
 		public void Run(GameState state, TimeSpan timeout)
 		{
-			interrupt = false;
-
-			var thread = new Thread(() => Run(state));
-			thread.Start();
+			RunInBackground(state);
 
 			thread.Join(timeout);
-			interrupt = true;
 
+			InterruptBackground();
+		}
+
+		public void RunInBackground(GameState state)
+		{
+			interrupt = false;
+
+			thread = new Thread(() => Run(state));
+			thread.Start();
+		}
+
+		public void InterruptBackground()
+		{
+			interrupt = true;
 			thread.Join();
 		}
 
