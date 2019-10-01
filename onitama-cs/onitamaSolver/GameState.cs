@@ -133,8 +133,39 @@ namespace Onitama
 
 				// Check moves from both cards
 
-				ValidMoves(outMoves, ownMaster, ownStudents, opponentMaster, opponentStudents, from, card1, winAndCaptureOnly);
-				ValidMoves(outMoves, ownMaster, ownStudents, opponentMaster, opponentStudents, from, card2, winAndCaptureOnly);
+				for(int cardIndex = 0; cardIndex < 2; cardIndex++)
+				{
+					var card = cardIndex == 0 ? card1 : card2;
+
+					var destinations = Card.Definitions[card].destinations[(int)player, from];
+					var goalGate = player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
+					
+					for (int i = 0; i < destinations.Length; i++)
+					{
+						var dest = destinations[i];
+						var destBit = 1 << dest;
+
+						// Can't capture self
+
+						if (((ownMaster | ownStudents) & destBit) != 0)
+							continue;
+
+						// Check move quality
+
+						var quality = MoveQuality.Normal;
+
+						if ((opponentMaster & destBit) != 0 || (destBit == goalGate && (ownMaster & fromBit) != 0))
+							quality = MoveQuality.Win;
+						else if ((opponentStudents & destBit) != 0)
+							quality = MoveQuality.Capture;
+
+						if (winAndCaptureOnly && quality == MoveQuality.Normal)
+							continue;
+
+						var move = new Move(card, from, dest, quality);
+						outMoves.Add(move);
+					}
+				}
 			}
 
 			// Order moves by quality, in place!
@@ -163,41 +194,6 @@ namespace Onitama
 
 					currentIndex++;
 				}
-			}
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void ValidMoves(List<Move> outMoves, int ownMaster, int ownStudents, int opponentMaster, int opponentStudents, byte from, byte card, bool winAndCaptureOnly)
-		{
-			var destinations = Card.Definitions[card].destinations[(int)player, from];
-			var goalGate = player == Player.Top ? Board.BottomGateBits : Board.TopGateBits;
-			var fromBit = 1 << from;
-
-
-			for (int i = 0; i < destinations.Length; i++)
-			{
-				var dest = destinations[i];
-				var destBit = 1 << dest;
-
-				// Can't capture self
-
-				if (((ownMaster | ownStudents) & destBit) != 0)
-					continue;
-
-				// Check move quality
-
-				var quality = MoveQuality.Normal;
-
-				if ((opponentMaster & destBit) != 0 || (destBit == goalGate && (ownMaster & fromBit) != 0))
-					quality = MoveQuality.Win;
-				else if ((opponentStudents & destBit) != 0)
-					quality = MoveQuality.Capture;
-
-				if (winAndCaptureOnly && quality == MoveQuality.Normal)
-					continue;
-
-				var move = new Move(card, from, dest, quality);
-				outMoves.Add(move);
 			}
 		}
 
