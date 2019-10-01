@@ -9,7 +9,6 @@ namespace Onitama
 		public const int WinScore = 125;
 		public const int PawnScore = 25;
 
-		public int Value { private set; get; }
 		public DateTime StartTime { private set; get; }
 		public Stats Stats { private set; get; }
 
@@ -116,12 +115,10 @@ namespace Onitama
 		{
 			StartTime = DateTime.Now;
 
-			Value = -int.MaxValue;
-
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
-				Value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
-				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, Value, (DateTime.Now - StartTime).TotalSeconds);
+				var value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
+				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, value, (DateTime.Now - StartTime).TotalSeconds);
 
 				Console.Write(BestMove());
 
@@ -130,7 +127,7 @@ namespace Onitama
 				if (interrupt)
 					break;
 
-				if (Math.Abs(Value) == WinScore)
+				if (Math.Abs(value) == WinScore)
 					break;
 			}
 		}
