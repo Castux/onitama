@@ -4,7 +4,6 @@
     <ProjectGuid>{CE2490A3-9B85-459F-B15C-52196E093E73}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <RootNamespace>onitamaBot</RootNamespace>
     <StartupObject>Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

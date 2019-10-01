@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "onitamaBot", "onitamaBot\on
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "onitamaSolver", "onitamaSolver\onitamaSolver.csproj", "{D2CBD4C5-CC88-42E9-82EB-3C5132C5F1D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "onitamaTester", "onitamaTester\onitamaTester.csproj", "{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,14 @@ Global
 		{D2CBD4C5-CC88-42E9-82EB-3C5132C5F1D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D2CBD4C5-CC88-42E9-82EB-3C5132C5F1D9}.Release|x86.ActiveCfg = Release|Any CPU
 		{D2CBD4C5-CC88-42E9-82EB-3C5132C5F1D9}.Release|x86.Build.0 = Release|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Debug|x86.Build.0 = Debug|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Release|x86.ActiveCfg = Release|Any CPU
+		{D3F85B32-90DE-4D2A-BE1C-65A61CB0A016}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
