@@ -68,6 +68,15 @@ namespace Onitama
 			Stats.StopTimer();
 		}
 
+		public Move BestMove()
+		{
+			var entry = table1.Get(root);
+			if (!entry.HasValue)
+				entry = table2.Get(root);
+
+			return entry.Value.move;
+		}
+
 		public List<Move> PrincipalVariation()
 		{
 			var res = new List<Move>();
@@ -81,6 +90,12 @@ namespace Onitama
 				if(entry.HasValue)
 				{
 					var move = entry.Value.move;
+
+					if(res.Contains(move))
+					{
+						break;
+					}
+
 					res.Add(move);
 
 					g = g.ApplyMove(move);
@@ -103,9 +118,9 @@ namespace Onitama
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
 				Value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
-				Console.Write("Depth {0}: {1} {2:0.00}\t", depth, Value, (DateTime.Now - StartTime).TotalSeconds);
-				foreach (var m in PrincipalVariation())
-					Console.Write(" | " + m);
+				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, Value, (DateTime.Now - StartTime).TotalSeconds);
+
+				Console.Write(BestMove());
 
 				Console.WriteLine();
 

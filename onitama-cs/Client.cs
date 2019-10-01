@@ -128,7 +128,7 @@ public class Client
 		// Our turn
 
 		solver.Start(game, timeout);
-		var move = solver.PrincipalVariation()[0];
+		var move = solver.BestMove();
 
 		var str = move.ToString(includeQuality: false);
 
