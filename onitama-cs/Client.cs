@@ -36,11 +36,13 @@ public class Client
 	private Server server;
 	private GameState game;
 	private Player us;
-	private int timeout;
+	private TimeSpan timeout;
+
+	private Solver solver;
 
 	public Client(Server server, int timeout)
 	{
-		this.timeout = timeout;
+		this.timeout = TimeSpan.FromSeconds(timeout - 1.0);
 		this.server = server;
 	}
 
@@ -84,6 +86,10 @@ public class Client
 		var cards = CardState.FromNames(cardNames[0], cardNames[1], cardNames[2], cardNames[3], cardNames[4]);
 
 		game = new GameState(board, cards, startPlayer);
+
+		// Power up the THINK MACHINE
+
+		solver = new Solver(1000, 4);
 	}
 
 	public void Run()
@@ -114,13 +120,10 @@ public class Client
 	{
 		// Our turn
 
-		var moves = new List<Move>();
-		game.AddValidMoves(moves);
+		solver.Start(game, timeout);
+		var move = solver.PrincipalVariation()[0];
 
-		// Play the first one :D
-
-		var move = moves[0];
-		var str = move.ToString(includeQuality: false);
+		var str = move.ToString();
 
 		Console.WriteLine("We are playing: " + str);
 		server.Send(str);
@@ -202,7 +205,7 @@ public static class Program
 			Console.WriteLine("Using defaults: 127.0.0.1:8000, 20 seconds");
 			address = "127.0.0.1";
 			port = 8000;
-			timeout = 20;
+			timeout = 15;
 		}
 		else
 		{

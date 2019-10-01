@@ -47,6 +47,8 @@ namespace Onitama
 
 		public void Start(GameState state, TimeSpan timeout)
 		{
+			interrupt = false;
+
 			var thread = new Thread(() => Start(state));
 			thread.Start();
 

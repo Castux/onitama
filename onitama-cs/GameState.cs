@@ -30,7 +30,12 @@ namespace Onitama
 			return card == m2.card && from == m2.from && to == m2.to;
 		}
 
-		public string ToString(bool includeQuality = true)
+		public override string ToString()
+		{
+			return ToString(true);
+		}
+
+		public string ToString(bool includeQuality)
 		{
 			var res = Card.Definitions[card].Name + " " + CellToCoords(from) + " " + CellToCoords(to);
 
