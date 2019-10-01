@@ -44,7 +44,7 @@ namespace Onitama
 
 			entries = new Entry[lowSize][];
 
-			for(var i = 0ul; i < lowSize; i++)
+			for (var i = 0ul; i < lowSize; i++)
 			{
 				entries[i] = new Entry[highSize];
 			}
@@ -60,11 +60,16 @@ namespace Onitama
 		{
 			var index = key & mask;
 
-			entries[index & lowMask][index >> lowBits] = new Entry
+			var array = entries[index & lowMask];
+
+			lock (array)
 			{
-				key = key,
-				value = value
-			};
+				array[index >> lowBits] = new Entry
+				{
+					key = key,
+					value = value
+				};
+			}
 		}
 
 		public void Add(GameState game, Move move, int value, int depth, Flag flag)
@@ -83,25 +88,39 @@ namespace Onitama
 		public bool AddIfHigherDepth(GameState game, Move move, int value, int depth, Flag flag)
 		{
 			var index = game.hash & mask;
-			var oldEntry = entries[index & lowMask][index >> lowBits];
+			var array = entries[index & lowMask];
 
-			if(depth > oldEntry.value.depth)	// Also erases an empty entry (since depth is initialized to 0)
+			Entry oldEntry;
+
+			lock (array)
+			{
+				oldEntry = array[index >> lowBits];
+			}
+
+			if (depth > oldEntry.value.depth)   // Also erases an empty entry (since depth is initialized to 0)
 			{
 				Add(game, move, value, depth, flag);
 				return true;
 			}
-
+			
 			return false;
 		}
 
 		public Value? Get(GameState game)
 		{
 			var index = game.hash & mask;
-			var entry = entries[index & lowMask][index >> lowBits];
+			var array = entries[index & lowMask];
+
+			Entry entry;
+
+			lock (array)
+			{
+				entry = array[index >> lowBits];
+			}
 
 			if (entry.key == game.hash)
 				return entry.value;
-
+			
 			return null;
 		}
 	}
