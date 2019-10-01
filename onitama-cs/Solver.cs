@@ -52,7 +52,7 @@ namespace Onitama
 			var thread = new Thread(() => Start(state));
 			thread.Start();
 
-			Thread.Sleep(timeout);
+			thread.Join(timeout);
 			interrupt = true;
 
 			thread.Join();

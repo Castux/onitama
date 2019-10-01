@@ -53,7 +53,7 @@ public class Client
 		this.server = server;
 	}
 
-	public void Setup()
+	public void Setup(int ttsize)
 	{
 		// Who are we?
 
@@ -96,7 +96,7 @@ public class Client
 
 		// Power up the THINK MACHINE
 
-		solver = new Solver(1000, 4);
+		solver = new Solver(1000, ttsize);
 	}
 
 	public void Run()
@@ -205,20 +205,23 @@ public static class Program
 		string address;
 		int port;
 		int timeout;
+		int ttsize;
 
-		if (args.Length < 3)
+		if (args.Length < 4)
 		{
-			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout>");
-			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds");
+			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout> <ttsize>");
+			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds, 2 GB transp. table");
 			address = "127.0.0.1";
 			port = 8000;
 			timeout = 15;
+			ttsize = 2;
 		}
 		else
 		{
 			address = args[0];
 			port = int.Parse(args[1]);
 			timeout = int.Parse(args[2]);
+			ttsize = int.Parse(args[3]);
 		}
 
 		try
@@ -226,7 +229,7 @@ public static class Program
 			var server = new Server(address, port);
 			var client = new Client(server, timeout);
 
-			client.Setup();
+			client.Setup(ttsize);
 			client.Run();
 		}
 		catch(Exception e)
