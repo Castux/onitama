@@ -48,7 +48,7 @@ namespace Onitama
 				new Card("Crane", new int[]{ -1,0, 1,-1, 1,1 } ),
 				new Card("Dragon", new int[]{ -1,-2, -1,2, 1,-1, 1,1 } ),
 				new Card("Elephant", new int[]{ -1,-1, -1,1, 0,-1, 0,1 } ),
-				new Card("Mantis", new int[]{ -1,-1, -1,1, 0,1 } ),
+				new Card("Mantis", new int[]{ -1,-1, -1,1, 1,0 } ),
 				new Card("Boar", new int[]{ -1,0, 0,-1, 0,1 } ),
 				new Card("Frog", new int[]{ -1,-1, 0,-2, 1,1 } ),
 				new Card("Goose", new int[]{ -1,-1, 0,-1, 0,1, 1,1 } ),

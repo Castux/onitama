@@ -27,7 +27,14 @@ public class Server
 
 	public string Receive()
 	{
-		return reader.ReadLine();
+		var msg = reader.ReadLine();
+
+		if(msg == null)
+		{
+			throw new Exception("Server dropped connection");
+		}
+
+		return msg;
 	}
 }
 
@@ -123,7 +130,7 @@ public class Client
 		solver.Start(game, timeout);
 		var move = solver.PrincipalVariation()[0];
 
-		var str = move.ToString();
+		var str = move.ToString(includeQuality: false);
 
 		Console.WriteLine("We are playing: " + str);
 		server.Send(str);
@@ -202,7 +209,7 @@ public static class Program
 		if (args.Length < 3)
 		{
 			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout>");
-			Console.WriteLine("Using defaults: 127.0.0.1:8000, 20 seconds");
+			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds");
 			address = "127.0.0.1";
 			port = 8000;
 			timeout = 15;
@@ -214,11 +221,18 @@ public static class Program
 			timeout = int.Parse(args[2]);
 		}
 
-		var server = new Server(address, port);
-		var client = new Client(server, timeout);
+		try
+		{
+			var server = new Server(address, port);
+			var client = new Client(server, timeout);
 
-		client.Setup();
-		client.Run();
+			client.Setup();
+			client.Run();
+		}
+		catch(Exception e)
+		{
+			Console.WriteLine("Error: " + e.Message);
+		}
 
 		Console.ReadLine();
 	}
