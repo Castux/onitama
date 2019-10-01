@@ -9,7 +9,6 @@ namespace Onitama
 		public const int WinScore = 125;
 		public const int PawnScore = 25;
 
-		public DateTime StartTime { private set; get; }
 		public Stats Stats { private set; get; }
 
 		private bool interrupt = false;
@@ -22,17 +21,23 @@ namespace Onitama
 
 		private TwoTieredTable table;
 		private List<List<Move>> quiescenceMoves;
-		
-		public Solver(int maxDepth, double ttSize = 2)
+
+
+		public Solver(int maxDepth, double ttSize) :
+			this(maxDepth, new TwoTieredTable(gbytes: ttSize))
+		{
+		}
+
+		public Solver(int maxDepth, TwoTieredTable table)
 		{
 			// Parameters
 			
 			this.maxDepth = maxDepth;
+			this.table = table;
 
 			// Allocs
 
 			Stats = new Stats();
-			table = new TwoTieredTable(gbytes: ttSize);
 
 			moveLists = new List<List<Move>>();
 			for (int i = 0; i <= maxDepth; i++)
@@ -113,12 +118,12 @@ namespace Onitama
 
 		private void IterativeSearch()
 		{
-			StartTime = DateTime.Now;
+			var startTime = DateTime.Now;
 
 			for(var depth = 1; depth <= maxDepth; depth++)
 			{
 				var value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
-				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, value, (DateTime.Now - StartTime).TotalSeconds);
+				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, value, (DateTime.Now - startTime).TotalSeconds);
 
 				Console.Write(BestMove());
 
