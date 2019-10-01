@@ -199,6 +199,9 @@ namespace Onitama
 			// TODO: see if we should pass state as reference? Is that even a thing?
 			// Negamax!
 
+			if (locker != null)
+				locker.Lock(state);
+
 			var value = int.MinValue;
 
 			var moves = moveLists[depth];
@@ -218,23 +221,55 @@ namespace Onitama
 				generatedAllMoves = true;
 			}
 
-			int bestMoveIndex = -1;
-
 			// Do the thing!
+
+			int bestMoveIndex = -1;
+			int delayedMoves = 0;
+			bool firstPass = true;
 
 			Stats.Recursed(ply);
 
-			for (int i = 0; i < moves.Count; i++)
+			int i = -1;
+			while(true)
 			{
+				i++;
+				if(i >= moves.Count)
+				{
+					if (firstPass)
+					{
+						firstPass = false;
+						i = 0;
+					}
+					else
+						break;
+				}
+
 				var move = moves[i];
 
 				if (i > 0 && move.Equals(ttBestMove))	// Best move is always tested first, but generated again. Skip it!
 					continue;
 
-				Stats.MoveExplored(ply);
-
 				var childState = state.ApplyMove(move);
 				int childValue;
+
+				if (locker != null)
+				{
+					if (firstPass)
+					{
+						if (locker.IsLocked(childState))
+						{
+							delayedMoves |= (1 << i);
+							continue;
+						}
+					}
+					else
+					{
+						if ((delayedMoves & (1 << i)) == 0)
+							continue;
+					}
+				}
+
+				Stats.MoveExplored(ply);
 
 				if (i == 0)								// Principal Variation Search: try to prove that the best move is indeed the best
 				{
@@ -278,7 +313,6 @@ namespace Onitama
 					state.AddValidMoves(moves);
 					generatedAllMoves = true;
 				}
-
 			}
 
 			// Did we cutoff using only the best move?
@@ -301,6 +335,9 @@ namespace Onitama
 
 
 			table.Add(state, moves[bestMoveIndex], value, depth, flag);
+
+			if (locker != null)
+				locker.Unlock(state);
 
 			return value;
 		}
