@@ -45,11 +45,11 @@ namespace Onitama
 				quiescenceMoves.Add(new List<Move>());
 		}
 
-		public void Start(GameState state, TimeSpan timeout)
+		public void Run(GameState state, TimeSpan timeout)
 		{
 			interrupt = false;
 
-			var thread = new Thread(() => Start(state));
+			var thread = new Thread(() => Run(state));
 			thread.Start();
 
 			thread.Join(timeout);
@@ -58,7 +58,7 @@ namespace Onitama
 			thread.Join();
 		}
 
-		public void Start(GameState state)
+		public void Run(GameState state)
 		{
 			Stats.StartTimer();
 
