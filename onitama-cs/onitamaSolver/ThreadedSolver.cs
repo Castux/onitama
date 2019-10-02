@@ -40,42 +40,32 @@ namespace Onitama
 		
 		public int ComputeValue(GameState state, int depth, out Move bestMove)
 		{
-			var tasks = new List<Task>();
+			var tasks = new Task[solvers.Count];
+			var moves = new Move[solvers.Count];
+			var values = new int[solvers.Count];
 
-			object _lock = new object();
-			Move? firstBestMove = null;
-			int bestValue = int.MinValue;
-
-			foreach (var solver in solvers)
+			for(int i = 0; i < solvers.Count; i++)
 			{
+				int index = i;
 				var task = new Task(() =>
 				{
-					var value = solver.ComputeValue(state, depth, out Move thisBestMove);
-
-					lock (_lock)
-					{
-						if (!firstBestMove.HasValue)
-						{
-							firstBestMove = thisBestMove;
-							bestValue = value;
-						}
-					}
+					values[index] = solvers[index].ComputeValue(state, depth, out Move thisBestMove);
+					moves[index] = thisBestMove;
 				});
-				tasks.Add(task);
+
+				tasks[index] = task;
 				task.Start();
 			}
 
-			var taskArray = tasks.ToArray();
+			var winner = Task.WaitAny(tasks);
 
-			Task.WaitAny(taskArray);
+			//foreach (var solver in solvers)
+			//	solver.Interrupt();
 
-			foreach (var solver in solvers)
-				solver.Interrupt();
+			Task.WaitAll(tasks);
 
-			Task.WaitAll(taskArray);
-
-			bestMove = firstBestMove.Value;
-			return bestValue;
+			bestMove = moves[winner];
+			return values[winner];
 		}
 	}
 }

@@ -58,8 +58,9 @@ public static class Tester
 		// GOGOGO
 
 		var numThreads = int.Parse(args[6]);
+		Console.WriteLine("Using {0} threads", numThreads);
 
-		var solver = new ThreadedSolver(1, ttsize);
+		var solver = new ThreadedSolver(numThreads, ttsize);
 
 		var value = solver.ComputeValue(gameState, depth, out Move bestMove);
 
