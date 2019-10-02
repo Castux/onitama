@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Onitama
 {
-	public class Solver : ISolver
+	public class Solver
 	{
 		public const int WinScore = 125;
 		public const int PawnScore = 25;
@@ -12,10 +12,6 @@ namespace Onitama
 		public Stats Stats { private set; get; }
 
 		private bool interrupt = false;
-		private Thread thread;
-
-		private GameState root;
-		private int maxDepth;
 		
 		private List<List<Move>> moveLists;
 
@@ -24,100 +20,43 @@ namespace Onitama
 		private List<List<Move>> quiescenceMoves;
 
 
-		public Solver(int maxDepth, double ttSize) :
-			this(maxDepth, new TwoTieredTable(gbytes: ttSize))
+		public Solver(double ttSize) :
+			this(new TwoTieredTable(gbytes: ttSize))
 		{
 		}
 
-		public Solver(int maxDepth, TwoTieredTable table, StateLocker locker = null)
+		public Solver(TwoTieredTable table, StateLocker locker = null)
 		{
 			// Parameters
 			
-			this.maxDepth = maxDepth;
 			this.table = table;
 			this.locker = locker;
 
-			// Allocs
+			// Allocs. We'll never need more that 50 depths, right?
 
 			Stats = new Stats();
 
 			moveLists = new List<List<Move>>();
-			for (int i = 0; i <= maxDepth; i++)
+			while (moveLists.Count < 50)
 				moveLists.Add(new List<Move>());
 
 			quiescenceMoves = new List<List<Move>>();
-			for (int i = 0; i < 20; i++)
+			while (quiescenceMoves.Count < 50)
 				quiescenceMoves.Add(new List<Move>());
 		}
 
-		public void Run(GameState state, TimeSpan timeout)
+		public int ComputeValue(GameState state, int depth, out Move bestMove)
 		{
-			RunInBackground(state);
-
-			thread.Join(timeout);
-
-			InterruptBackground();
+			var value = ComputeValue(state, depth, 0, int.MinValue, int.MaxValue);
+			bestMove = table.Get(state).Value.move;
+			return value;
 		}
 
-		public void RunInBackground(GameState state)
-		{
-			interrupt = false;
-
-			thread = new Thread(() => Run(state));
-			thread.Start();
-		}
-
-		public void InterruptBackground()
+		public void Interrupt()
 		{
 			interrupt = true;
-			thread.Join();
 		}
-
-		public void Run(GameState state)
-		{
-			Stats.StartTimer();
-
-			root = state;
-			IterativeSearch();
-
-			Stats.StopTimer();
-		}
-
-		public Move BestMove()
-		{
-			return table.Get(root).Value.move;
-		}
-
-		public List<Move> PrincipalVariation()
-		{
-			var res = new List<Move>();
-			var g = root;
-			while(true)
-			{
-				var entry = table.Get(g);
-
-				if(entry.HasValue)
-				{
-					var move = entry.Value.move;
-
-					if(res.Contains(move))
-					{
-						break;
-					}
-
-					res.Add(move);
-
-					g = g.ApplyMove(move);
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			return res;
-		}
-
+		/*
 		private void IterativeSearch()
 		{
 			var startTime = DateTime.Now;
@@ -127,8 +66,7 @@ namespace Onitama
 				var value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
 				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, value, (DateTime.Now - startTime).TotalSeconds);
 
-				Console.Write(BestMove());
-
+				
 				Console.WriteLine();
 
 				if (interrupt)
@@ -137,7 +75,7 @@ namespace Onitama
 				if (Math.Abs(value) == WinScore)
 					break;
 			}
-		}
+		}*/
 
 		private int ComputeValue(GameState state, int depth, int ply, int alpha, int beta)
 		{

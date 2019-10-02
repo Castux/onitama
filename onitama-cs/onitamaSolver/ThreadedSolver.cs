@@ -1,21 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Onitama
 {
-	public interface ISolver
-	{
-		void Run(GameState state, TimeSpan timeout);
-		Move BestMove();
-		Stats Stats { get; }
-	}
-
-	public class ThreadedSolver : ISolver
+	public class ThreadedSolver
 	{
 		private List<Solver> solvers;
 
-		public ThreadedSolver(int numThreads, int maxDepth, double ttSize)
+		public ThreadedSolver(int numThreads, double ttSize)
 		{
 			var table = new TwoTieredTable(gbytes: ttSize);
 			var locker = new StateLocker();
@@ -24,10 +17,10 @@ namespace Onitama
 
 			for (int i = 0; i < numThreads; i++)
 			{
-				solvers.Add(new Solver(maxDepth, table, locker));
+				solvers.Add(new Solver(table, locker));
 			}
 		}
-
+		/*
 		public void Run(GameState state, TimeSpan timeout)
 		{
 			var threads = new List<Thread>();
@@ -43,16 +36,46 @@ namespace Onitama
 			{
 				thread.Join();
 			}
-		}
-
-		public Move BestMove()
+		}*/
+		
+		public int ComputeValue(GameState state, int depth, out Move bestMove)
 		{
-			return solvers[0].BestMove();
-		}
+			var tasks = new List<Task>();
 
-		public Stats Stats
-		{
-			get {return solvers[0].Stats;}
+			object _lock = new object();
+			Move? firstBestMove = null;
+			int bestValue = int.MinValue;
+
+			foreach (var solver in solvers)
+			{
+				var task = new Task(() =>
+				{
+					var value = solver.ComputeValue(state, depth, out Move thisBestMove);
+
+					lock (_lock)
+					{
+						if (!firstBestMove.HasValue)
+						{
+							firstBestMove = thisBestMove;
+							bestValue = value;
+						}
+					}
+				});
+				tasks.Add(task);
+				task.Start();
+			}
+
+			var taskArray = tasks.ToArray();
+
+			Task.WaitAny(taskArray);
+
+			foreach (var solver in solvers)
+				solver.Interrupt();
+
+			Task.WaitAll(taskArray);
+
+			bestMove = firstBestMove.Value;
+			return bestValue;
 		}
 	}
 }

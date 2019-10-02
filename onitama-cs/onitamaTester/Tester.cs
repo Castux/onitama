@@ -58,21 +58,12 @@ public static class Tester
 		// GOGOGO
 
 		var numThreads = int.Parse(args[6]);
-		ISolver solver;
 
-		if(numThreads == 1)
-		{
-			solver = new Solver(depth, ttsize);
-		}
-		else
-		{
-			solver = new ThreadedSolver(numThreads, depth, ttsize);
-		}
+		var solver = new ThreadedSolver(1, ttsize);
 
-		solver.Run(gameState, timeout);
+		var value = solver.ComputeValue(gameState, depth, out Move bestMove);
 
-		Console.WriteLine("Best move: " + solver.BestMove());
-		solver.Stats.Print();
+		Console.WriteLine("Best move: " + bestMove + ", value: " + value);
 
 		Exit();
 	}
