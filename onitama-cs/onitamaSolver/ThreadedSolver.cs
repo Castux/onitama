@@ -4,7 +4,14 @@ using System.Threading;
 
 namespace Onitama
 {
-	public class ThreadedSolver
+	public interface ISolver
+	{
+		void Run(GameState state, TimeSpan timeout);
+		Move BestMove();
+		Stats Stats { get; }
+	}
+
+	public class ThreadedSolver : ISolver
 	{
 		private List<Solver> solvers;
 

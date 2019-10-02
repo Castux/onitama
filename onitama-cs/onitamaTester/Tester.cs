@@ -9,9 +9,9 @@ public static class Tester
 	{
 		// Arguments parsing
 
-		if(args.Length < 6)
+		if(args.Length < 7)
 		{
-			Console.WriteLine("Usage: mono onitamaTester.exe <board> <cards> <startPlayer> <depth> <timeout> <ttsize>");
+			Console.WriteLine("Usage: mono onitamaTester.exe <board> <cards> <startPlayer> <depth> <timeout> <ttsize> <threads>");
 			Exit();
 		}
 
@@ -57,8 +57,18 @@ public static class Tester
 
 		// GOGOGO
 
-		var solver = new ThreadedSolver(8, depth, ttsize);
-		//var solver = new Solver(depth, ttsize);
+		var numThreads = int.Parse(args[6]);
+		ISolver solver;
+
+		if(numThreads == 1)
+		{
+			solver = new Solver(depth, ttsize);
+		}
+		else
+		{
+			solver = new ThreadedSolver(numThreads, depth, ttsize);
+		}
+
 		solver.Run(gameState, timeout);
 
 		Console.WriteLine("Best move: " + solver.BestMove());

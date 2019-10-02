@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Onitama
 {
-	public class Solver
+	public class Solver : ISolver
 	{
 		public const int WinScore = 125;
 		public const int PawnScore = 25;
