@@ -221,6 +221,14 @@ namespace Onitama
 				generatedAllMoves = true;
 			}
 
+			// Although rare, it can happen that no moves exist for a position
+			// In this case, we lose.
+
+			if(moves.Count == 0)
+			{
+				return -WinScore;
+			}
+
 			// Do the thing!
 
 			int bestMoveIndex = -1;
@@ -243,9 +251,6 @@ namespace Onitama
 					else
 						break;
 				}
-
-				// TODO: bug!! Although rare, it can happen that no moves exist for a position
-				// In this case, we lose. UPDATE THIS!
 
 				var move = moves[i];
 
