@@ -244,6 +244,9 @@ namespace Onitama
 						break;
 				}
 
+				// TODO: bug!! Although rare, it can happen that no moves exist for a position
+				// In this case, we lose. UPDATE THIS!
+
 				var move = moves[i];
 
 				if (i > 0 && move.Equals(ttBestMove))	// Best move is always tested first, but generated again. Skip it!
