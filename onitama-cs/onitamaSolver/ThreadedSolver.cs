@@ -7,6 +7,7 @@ namespace Onitama
 	public class ThreadedSolver
 	{
 		private List<Solver> solvers;
+		private bool interrupt;
 
 		public ThreadedSolver(int numThreads, double ttSize)
 		{
@@ -58,12 +59,14 @@ namespace Onitama
 
 		public int ComputeValueIterative(GameState state, int depth, out Move bestMove)
 		{
+			interrupt = false;
+
 			Move move = new Move();
 			int value = -Solver.Infinity;
 
 			var start = DateTime.Now;
 
-			for(int i = 1; i <= depth; i++)
+			for(int i = 1; i <= depth && !interrupt; i++)
 			{
 				value = ComputeValue(state, i, out move);
 				if (Math.Abs(value) == Solver.WinScore)
@@ -73,6 +76,29 @@ namespace Onitama
 			Console.WriteLine("Total time: " + (DateTime.Now - start));
 
 			bestMove = move;
+			return value;
+		}
+
+		public int Run(GameState state, int depth, TimeSpan timeout, out Move bestMove)
+		{
+			Move result = new Move();
+			int value = -Solver.Infinity;
+
+			var task = new Task(() =>
+			{
+				value = ComputeValueIterative(state, depth, out result);
+			});
+
+			task.Start();
+			task.Wait(timeout);
+
+			foreach (var solver in solvers)
+				solver.Interrupt();
+
+			interrupt = true;
+			task.Wait();
+
+			bestMove = result;
 			return value;
 		}
 	}

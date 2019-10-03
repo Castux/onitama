@@ -45,7 +45,7 @@ public class Client
 	private TimeSpan timeout;
 	private bool lookahead;
 
-	private Solver solver;
+	private ThreadedSolver solver;
 
 	public Client(Server server, int timeout, bool lookahead)
 	{
@@ -97,7 +97,7 @@ public class Client
 
 		// Power up the THINK MACHINE
 
-		solver = new Solver(1000, ttsize);
+		solver = new ThreadedSolver(1, ttsize);
 	}
 
 	public void Run()
@@ -128,8 +128,7 @@ public class Client
 	{
 		// Our turn
 
-		solver.Run(game, timeout);
-		var move = solver.BestMove();
+		solver.Run(game, int.MaxValue, timeout, out Move move);
 
 		var str = move.ToString(includeQuality: false);
 
@@ -149,13 +148,13 @@ public class Client
 	{
 		// Run the solver for their side too, to start looking ahead
 
-		if(lookahead)
-			solver.RunInBackground(game);
+		//if(lookahead)
+		//	solver.RunInBackground(game);
 
 		var str = server.Receive();
 
-		if(lookahead)
-			solver.InterruptBackground();
+		//if(lookahead)
+		//	solver.InterruptBackground();
 
 		Console.WriteLine("Other player plays: " + str);
 
