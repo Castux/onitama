@@ -16,7 +16,7 @@ namespace Onitama
 
 			for (int i = 0; i < numThreads; i++)
 			{
-				solvers.Add(new Solver(table, workerIndex: i));
+				solvers.Add(new Solver(table));
 			}
 		}
 

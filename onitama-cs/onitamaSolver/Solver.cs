@@ -18,10 +18,8 @@ namespace Onitama
 		private TwoTieredTable table;
 		private List<List<Move>> quiescenceMoves;
 
-		private int workerIndex;
-
-		public Solver(double ttSize, int workerIndex = 0) :
-			this(new TwoTieredTable(gbytes: ttSize), workerIndex)
+		public Solver(double ttSize) :
+			this(new TwoTieredTable(gbytes: ttSize))
 		{
 		}
 
@@ -30,7 +28,6 @@ namespace Onitama
 			// Parameters
 			
 			this.table = table;
-			this.workerIndex = workerIndex;
 
 			// Allocs. We'll never need more that 50 depths, right?
 
@@ -160,8 +157,7 @@ namespace Onitama
 
 			for(int i = 0; i < moves.Count; i++)
 			{
-				var moveIndex = (ply == 0) ? (i + workerIndex) % moves.Count : i;
-				var move = moves[moveIndex];
+				var move = moves[i];
 				
 				var childState = state.ApplyMove(move);
 				int childValue;
