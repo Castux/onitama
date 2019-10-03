@@ -148,13 +148,13 @@ public class Client
 	{
 		// Run the solver for their side too, to start looking ahead
 
-		//if(lookahead)
-		//	solver.RunInBackground(game);
+		if(lookahead)
+			solver.RunInBackground(game);
 
 		var str = server.Receive();
 
-		//if(lookahead)
-		//	solver.InterruptBackground();
+		if(lookahead)
+			solver.Interrupt();
 
 		Console.WriteLine("Other player plays: " + str);
 

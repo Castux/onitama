@@ -92,14 +92,30 @@ namespace Onitama
 			task.Start();
 			task.Wait(timeout);
 
-			foreach (var solver in solvers)
-				solver.Interrupt();
+			Interrupt();
 
-			interrupt = true;
 			task.Wait();
 
 			bestMove = result;
 			return value;
+		}
+
+		public void RunInBackground(GameState state)
+		{
+			var task = new Task(() =>
+			{
+				ComputeValueIterative(state, int.MaxValue, out Move result);
+			});
+
+			task.Start();
+		}
+
+		public void Interrupt()
+		{
+			foreach (var solver in solvers)
+				solver.Interrupt();
+
+			interrupt = true;
 		}
 	}
 }
