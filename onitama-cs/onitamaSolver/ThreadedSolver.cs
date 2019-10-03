@@ -59,7 +59,7 @@ namespace Onitama
 		public int ComputeValueIterative(GameState state, int depth, out Move bestMove)
 		{
 			Move move = new Move();
-			int value = int.MinValue;
+			int value = -Solver.Infinity;
 
 			var start = DateTime.Now;
 

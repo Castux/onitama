@@ -7,6 +7,7 @@ namespace Onitama
 	{
 		public const int WinScore = 125;
 		public const int PawnScore = 25;
+		public const int Infinity = 1000;
 
 		public Stats Stats { private set; get; }
 
@@ -48,7 +49,7 @@ namespace Onitama
 		{
 			interrupt = false;
 
-			var value = ComputeValue(state, depth, 0, int.MinValue, int.MaxValue);
+			var value = ComputeValue(state, depth, 0, -Infinity, Infinity);
 			bestMove = table.Get(state).Value.move;
 
 			return value;
@@ -124,7 +125,7 @@ namespace Onitama
 			// TODO: see if we should pass state as reference? Is that even a thing?
 			// Negamax!
 
-			var value = int.MinValue;
+			var value = -Infinity;
 
 			var moves = moveLists[depth];
 			moves.Clear();
