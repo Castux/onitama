@@ -61,8 +61,7 @@ public static class Tester
 		Console.WriteLine("Using {0} threads", numThreads);
 
 		var solver = new ThreadedSolver(numThreads, ttsize);
-
-		var value = solver.ComputeValue(gameState, depth, out Move bestMove);
+		var value = solver.ComputeValueIterative(gameState, depth, out Move bestMove);
 
 		Console.WriteLine("Best move: " + bestMove + ", value: " + value);
 

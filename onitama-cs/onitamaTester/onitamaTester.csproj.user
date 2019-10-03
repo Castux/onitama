@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>default Ox,Horse,Dragon,Frog,Tiger top 10 1000 8 1</StartArguments>
+    <StartArguments>default Ox,Horse,Rabbit,Frog,Crane top 16 1000 4 1</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>default Ox,Horse,Dragon,Frog,Tiger top 15 1000 8</StartArguments>

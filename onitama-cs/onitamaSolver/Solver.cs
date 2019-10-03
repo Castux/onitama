@@ -17,17 +17,19 @@ namespace Onitama
 		private TwoTieredTable table;
 		private List<List<Move>> quiescenceMoves;
 
+		private int workerIndex;
 
-		public Solver(double ttSize) :
-			this(new TwoTieredTable(gbytes: ttSize))
+		public Solver(double ttSize, int workerIndex = 0) :
+			this(new TwoTieredTable(gbytes: ttSize), workerIndex)
 		{
 		}
 
-		public Solver(TwoTieredTable table)
+		public Solver(TwoTieredTable table, int workerIndex = 0)
 		{
 			// Parameters
 			
 			this.table = table;
+			this.workerIndex = workerIndex;
 
 			// Allocs. We'll never need more that 50 depths, right?
 
@@ -44,8 +46,11 @@ namespace Onitama
 
 		public int ComputeValue(GameState state, int depth, out Move bestMove)
 		{
+			interrupt = false;
+
 			var value = ComputeValue(state, depth, 0, int.MinValue, int.MaxValue);
 			bestMove = table.Get(state).Value.move;
+
 			return value;
 		}
 
@@ -53,26 +58,11 @@ namespace Onitama
 		{
 			interrupt = true;
 		}
-		/*
-		private void IterativeSearch()
+
+		public bool Interrupted
 		{
-			var startTime = DateTime.Now;
-
-			for(var depth = 1; depth <= maxDepth; depth++)
-			{
-				var value = ComputeValue(root, depth, 0, -int.MaxValue, int.MaxValue);
-				Console.Write("Depth {0,2:##}: {1} {2:0.00}\t", depth, value, (DateTime.Now - startTime).TotalSeconds);
-
-				
-				Console.WriteLine();
-
-				if (interrupt)
-					break;
-
-				if (Math.Abs(value) == WinScore)
-					break;
-			}
-		}*/
+			get { return interrupt; }
+		}
 
 		private int ComputeValue(GameState state, int depth, int ply, int alpha, int beta)
 		{
@@ -169,11 +159,9 @@ namespace Onitama
 
 			for(int i = 0; i < moves.Count; i++)
 			{
-				var move = moves[i];
-
-				if (i > 0 && move.Equals(ttBestMove))	// Best move is always tested first, but generated again. Skip it!
-					continue;
-
+				var moveIndex = (ply == 0) ? (i + workerIndex) % moves.Count : i;
+				var move = moves[moveIndex];
+				
 				var childState = state.ApplyMove(move);
 				int childValue;
 

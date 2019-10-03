@@ -16,7 +16,7 @@ namespace Onitama
 
 			for (int i = 0; i < numThreads; i++)
 			{
-				solvers.Add(new Solver(table));
+				solvers.Add(new Solver(table, workerIndex: i));
 			}
 		}
 
@@ -36,7 +36,9 @@ namespace Onitama
 					values[index] = solvers[index].ComputeValue(state, depth, out Move thisBestMove);
 					moves[index] = thisBestMove;
 
-					Console.WriteLine(thisBestMove + " " + values[index] + " " + (DateTime.Now - start));
+					var tmp = solvers[index].Interrupted ? " (interrupted)" : "";
+
+					Console.WriteLine(depth + ": " + thisBestMove + " " + values[index] + " " + (DateTime.Now - start) + tmp);
 				});
 
 				tasks[index] = task;
@@ -52,6 +54,26 @@ namespace Onitama
 
 			bestMove = moves[winner];
 			return values[winner];
+		}
+
+		public int ComputeValueIterative(GameState state, int depth, out Move bestMove)
+		{
+			Move move = new Move();
+			int value = int.MinValue;
+
+			var start = DateTime.Now;
+
+			for(int i = 1; i <= depth; i++)
+			{
+				value = ComputeValue(state, i, out move);
+				if (Math.Abs(value) == Solver.WinScore)
+					break;
+			}
+
+			Console.WriteLine("Total time: " + (DateTime.Now - start));
+
+			bestMove = move;
+			return value;
 		}
 	}
 }
