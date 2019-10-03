@@ -54,7 +54,7 @@ public class Client
 		this.lookahead = lookahead;
 	}
 
-	public void Setup(int ttsize)
+	public void Setup(int ttsize, int threads)
 	{
 		// Who are we?
 
@@ -97,7 +97,7 @@ public class Client
 
 		// Power up the THINK MACHINE
 
-		solver = new ThreadedSolver(1, ttsize);
+		solver = new ThreadedSolver(threads, ttsize);
 	}
 
 	public void Run()
@@ -213,16 +213,18 @@ public static class Program
 		int timeout;
 		int ttsize;
 		bool lookahead;
+		int threads;
 
-		if (args.Length < 5)
+		if (args.Length < 6)
 		{
-			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout> <ttsize> <lookahead>");
-			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds, 2 GB transp. table, do lookahead");
+			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout> <ttsize> <lookahead> <threads>");
+			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds, 2 GB transp. table, do lookahead, 4 threads");
 			address = "127.0.0.1";
 			port = 8000;
 			timeout = 15;
 			ttsize = 2;
 			lookahead = true;
+			threads = 4;
 		}
 		else
 		{
@@ -231,6 +233,7 @@ public static class Program
 			timeout = int.Parse(args[2]);
 			ttsize = int.Parse(args[3]);
 			lookahead = args[4] == "lookahead";
+			threads = int.Parse(args[5]);
 		}
 
 		try
@@ -238,7 +241,7 @@ public static class Program
 			var server = new Server(address, port);
 			var client = new Client(server, timeout, lookahead);
 
-			client.Setup(ttsize);
+			client.Setup(ttsize, threads);
 			client.Run();
 		}
 		catch(Exception e)
