@@ -164,7 +164,7 @@ namespace Onitama
 			}
 			else
 			{
-				throw new Exception("Invalid card move");
+				throw new InvalidMove();
 			}
 		}
 	}

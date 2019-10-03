@@ -272,7 +272,7 @@ namespace Onitama
 				h = Hash.UpdateBoardHash(h, to, Player.Bottom, Piece.Student);
 			}
 			else
-				throw new Exception("Invalid move");
+				throw new InvalidMove();
 
 			// Remove destination
 

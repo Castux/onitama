@@ -29,7 +29,7 @@ namespace Onitama
 
 		private Entry[][] entries;
 		private const int lowBits = 4;
-		private const int lowMask = 0b1111;
+		private const int lowMask = (1 << lowBits) - 1;
 
 		public TranspositionTable(double gbytes)
 		{

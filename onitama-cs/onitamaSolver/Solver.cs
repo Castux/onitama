@@ -141,8 +141,23 @@ namespace Onitama
 			for(int i = 0; i < moves.Count; i++)
 			{
 				var move = moves[i];
-				
-				var childState = state.ApplyMove(move);
+				GameState childState;
+
+				try
+				{
+					childState = state.ApplyMove(move);
+				}
+				catch(InvalidMove)
+				{
+					Console.WriteLine("Tried applying an invalid move.");
+					if (ttEntry.HasValue && ttBestMove.Equals(move))
+						Console.WriteLine("It came from the transposition table.");
+					else
+						Console.WriteLine("It came from the game state.");
+
+					continue;
+				}
+
 				int childValue;
 
 				if (i == 0)								// Principal Variation Search: try to prove that the best move is indeed the best

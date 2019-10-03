@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Onitama
 {
@@ -9,6 +9,11 @@ namespace Onitama
 		Win,
 		Capture,
 		Normal
+	}
+
+	public class InvalidMove : Exception
+	{
+
 	}
 
 	public struct Move
