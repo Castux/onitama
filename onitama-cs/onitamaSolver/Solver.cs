@@ -9,8 +9,6 @@ namespace Onitama
 		public const int PawnScore = 25;
 		public const int Infinity = 1000;
 
-		//public Stats Stats { private set; get; }
-
 		private bool interrupt = false;
 		
 		private List<List<Move>> moveLists;
@@ -18,16 +16,19 @@ namespace Onitama
 		private TwoTieredTable table;
 		private List<List<Move>> quiescenceMoves;
 
+		private MoveLocker locker;
+
 		public Solver(double ttSize) :
 			this(new TwoTieredTable(gbytes: ttSize))
 		{
 		}
 
-		public Solver(TwoTieredTable table, int workerIndex = 0)
+		public Solver(TwoTieredTable table, MoveLocker locker = null)
 		{
 			// Parameters
 			
 			this.table = table;
+			this.locker = locker;
 
 			// Allocs. We'll never need more that 50 depths, right?
 
@@ -115,6 +116,7 @@ namespace Onitama
 			// Try only the best move first
 
 			bool generatedAllMoves = false;
+			int initialMoveCount = 0;
 
 			if (ttEntry.HasValue)
 			{
@@ -124,6 +126,7 @@ namespace Onitama
 			{
 				state.AddValidMoves(moves);
 				generatedAllMoves = true;
+				initialMoveCount = moves.Count;
 			}
 
 			// Although rare, it can happen that no moves exist for a position
@@ -137,11 +140,20 @@ namespace Onitama
 			// Do the thing!
 
 			int bestMoveIndex = -1;
-
+			
 			for(int i = 0; i < moves.Count; i++)
 			{
 				var move = moves[i];
+
 				GameState childState;
+				int childValue;
+
+				if (locker?.IsLocked(move,ply) == true && i < initialMoveCount)
+				{
+					// Delay move
+					moves.Add(move);
+					continue;
+				}
 
 				try
 				{
@@ -158,7 +170,7 @@ namespace Onitama
 					continue;
 				}
 
-				int childValue;
+				locker?.Lock(move,ply);
 
 				if (i == 0)								// Principal Variation Search: try to prove that the best move is indeed the best
 				{
@@ -173,6 +185,8 @@ namespace Onitama
 						childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
 					}
 				}
+
+				locker?.Unlock(move,ply);
 
 				if (childValue > value)
 				{
@@ -197,6 +211,7 @@ namespace Onitama
 				{
 					state.AddValidMoves(moves);
 					generatedAllMoves = true;
+					initialMoveCount = moves.Count;
 				}
 			}
 

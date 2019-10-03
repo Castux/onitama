@@ -33,6 +33,7 @@
     <Compile Include="Solver.cs" />
     <Compile Include="TranspositionTable.cs" />
     <Compile Include="ThreadedSolver.cs" />
+    <Compile Include="MoveLocker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

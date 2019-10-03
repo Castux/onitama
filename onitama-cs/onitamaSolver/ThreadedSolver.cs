@@ -12,12 +12,13 @@ namespace Onitama
 		public ThreadedSolver(int numThreads, double ttSize)
 		{
 			var table = new TwoTieredTable(gbytes: ttSize);
+			var locker = new MoveLocker();
 
 			solvers = new List<Solver>();
 
 			for (int i = 0; i < numThreads; i++)
 			{
-				solvers.Add(new Solver(table));
+				solvers.Add(new Solver(table, locker));
 			}
 		}
 
