@@ -27,7 +27,6 @@
   <ItemGroup>
     <Compile Include="Board.cs" />
     <Compile Include="Cards.cs" />
-    <Compile Include="StateLocker.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="Hash.cs" />
     <Compile Include="Positioning.cs" />

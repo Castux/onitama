@@ -11,33 +11,15 @@ namespace Onitama
 		public ThreadedSolver(int numThreads, double ttSize)
 		{
 			var table = new TwoTieredTable(gbytes: ttSize);
-			var locker = new StateLocker();
 
 			solvers = new List<Solver>();
 
 			for (int i = 0; i < numThreads; i++)
 			{
-				solvers.Add(new Solver(table, locker));
+				solvers.Add(new Solver(table));
 			}
 		}
-		/*
-		public void Run(GameState state, TimeSpan timeout)
-		{
-			var threads = new List<Thread>();
 
-			foreach (var solver in solvers)
-			{
-				var thread = new Thread(() => solver.Run(state, timeout));
-				thread.Start();
-				threads.Add(thread);
-			}
-
-			foreach (var thread in threads)
-			{
-				thread.Join();
-			}
-		}*/
-		
 		public int ComputeValue(GameState state, int depth, out Move bestMove)
 		{
 			var tasks = new Task[solvers.Count];
@@ -57,15 +39,21 @@ namespace Onitama
 				task.Start();
 			}
 
+			/*
 			var winner = Task.WaitAny(tasks);
 
-			//foreach (var solver in solvers)
-			//	solver.Interrupt();
+			foreach (var solver in solvers)
+				solver.Interrupt();
+			*/
 
-			Task.WaitAll(tasks);
+		   Task.WaitAll(tasks);
 
-			bestMove = moves[winner];
-			return values[winner];
+			bestMove = moves[0];
+
+			for (int i = 0; i < solvers.Count; i++)
+				Console.WriteLine(moves[i] + " " + values[i]);
+
+			return values[0];
 		}
 	}
 }
