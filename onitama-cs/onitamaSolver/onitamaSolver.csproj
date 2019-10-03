@@ -31,7 +31,6 @@
     <Compile Include="Hash.cs" />
     <Compile Include="Positioning.cs" />
     <Compile Include="Solver.cs" />
-    <Compile Include="Stats.cs" />
     <Compile Include="TranspositionTable.cs" />
     <Compile Include="ThreadedSolver.cs" />
   </ItemGroup>
