@@ -4,6 +4,8 @@ namespace Onitama
 	public static class Positioning
 	{
 		// All these scorings are in the Top point of view
+		// A good heuristic for positioning helps ordering the moves better,
+		// increasing chances of beta-cutoffs.
 
 		public static int Center(Board board)
 		{

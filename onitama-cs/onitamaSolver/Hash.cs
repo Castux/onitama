@@ -2,6 +2,13 @@
 
 namespace Onitama
 {
+	// This is a so called "Zobrist" hashing, used originally in chess.
+	// It assigns a random number to each combination of pawn, position, card and player,
+	// and XORs them all together to get a pseudo-random, hopefully unique hash for
+	// the gamestate.
+	// Additionally, since it's all XORs, it can be computed incrementally for each small
+	// position change, which is nice and fast.
+
 	public static class Hash
 	{
 		private static Random rnd;

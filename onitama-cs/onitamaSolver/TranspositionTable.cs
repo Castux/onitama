@@ -30,6 +30,19 @@ namespace Onitama
 
 		private const int split = 1024;
 
+		// The transposition table is two-tiered: in one tier, we replace older
+		// entries only if the new entry has a higher depth (which therefore has
+		// more information and can skip a larger branch of the search).
+		// The other tier is replace-always: younger entries have more probability
+		// of hitting again soon.
+		// In practice we only ever overwrite one entry at a time: either the
+		// depth-preferred, or the other one. No need to have duplicates in the table.
+
+		// This is implemented as an array of arrays, to avoid allocating too large
+		// chuncks of memory. Also, this is made thread safe by locking on the
+		// array being accessed, so having more granularity diminishes the risk of
+		// threads waiting on each other.
+
 		public TranspositionTable(double gbytes)
 		{
 			var numEntries = (ulong)(gbytes * 1024ul * 1024ul * 1024ul / 16ul);
