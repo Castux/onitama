@@ -25,32 +25,24 @@ namespace Onitama
 			public Flag flag;
 		}
 
-		private ulong mask;
-
 		private Entry[][,] entries;
-		private const int lowBits = 4;
-		private const int lowMask = (1 << lowBits) - 1;
+		private ulong numIndices;
+
+		private const int split = 16;
 
 		public TranspositionTable(double gbytes)
 		{
-			var numEntries = (ulong)(gbytes * 1024ul * 1024ul * 1024ul / 16ul / 2);
-			var numBits = (int)Math.Log(numEntries, 2);
+			var numEntries = (ulong)(gbytes * 1024ul * 1024ul * 1024ul / 16ul);
+			numIndices = numEntries / 2;
 
-			numEntries = 1ul << numBits;
+			entries = new Entry[split][,];
 
-			ulong lowSize = 1u << lowBits;
-			ulong highSize = numEntries / lowSize;
-
-			entries = new Entry[lowSize][,];
-
-			for (var i = 0ul; i < lowSize; i++)
+			for (var i = 0ul; i < split; i++)
 			{
-				entries[i] = new Entry[highSize,2];
+				entries[i] = new Entry[numIndices / split, 2];
 			}
 
-			mask = numEntries - 1;
-
-			ulong items = (ulong)entries.Length * (ulong)entries[0].Length * 2;
+			var items = (ulong)entries.Length * (ulong)entries[0].Length;
 			var trueGbytes = items * 16f / 1024 / 1024 / 1024;
 			Console.WriteLine("TT size: " + items + " entries (" + trueGbytes + " GB)");
 		}
@@ -69,28 +61,28 @@ namespace Onitama
 				}
 			};
 
-			var index = game.hash & mask;
-			var array = entries[index & lowMask];
+			var index = game.hash % numIndices;
+			var array = entries[index % split];
 
 			lock(array)
 			{
-				var oldEntry = array[index >> lowBits, 0];
+				var oldEntry = array[index / split, 0];
 				var tableIndex = depth > oldEntry.value.depth ? 0 : 1;
 
-				array[index >> lowBits, tableIndex] = entry;
+				array[index / split, tableIndex] = entry;
 			}
 		}
 
 		public Value? Get(GameState game)
 		{
-			var index = game.hash & mask;
-			var array = entries[index & lowMask];
+			var index = game.hash % numIndices;
+			var array = entries[index % split];
 
 			lock (array)
 			{
 				for (int i = 0; i < 2; i++)
 				{
-					var entry = array[index >> lowBits, i];
+					var entry = array[index / split, i];
 					if (entry.key == game.hash)
 						return entry.value;
 				}
