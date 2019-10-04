@@ -218,11 +218,11 @@ public static class Program
 		if (args.Length < 6)
 		{
 			Console.WriteLine("Usage: mono Program.exe <server> <port> <timeout> <ttsize> <lookahead> <threads>");
-			Console.WriteLine("Using defaults: 127.0.0.1:8000, 15 seconds, 2 GB transp. table, do lookahead, 4 threads");
+			Console.WriteLine("Using defaults: 127.0.0.1:8000, 30 seconds, 8 GB transp. table, do lookahead, 4 threads");
 			address = "127.0.0.1";
 			port = 8000;
-			timeout = 15;
-			ttsize = 2;
+			timeout = 30;
+			ttsize = 8;
 			lookahead = true;
 			threads = 4;
 		}
