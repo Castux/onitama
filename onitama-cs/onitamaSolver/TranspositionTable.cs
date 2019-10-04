@@ -28,7 +28,7 @@ namespace Onitama
 		private Entry[][,] entries;
 		private ulong numIndices;
 
-		private const int split = 16;
+		private const int split = 1024;
 
 		public TranspositionTable(double gbytes)
 		{
