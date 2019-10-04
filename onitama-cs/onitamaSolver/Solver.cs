@@ -13,17 +13,17 @@ namespace Onitama
 		
 		private List<List<Move>> moveLists;
 
-		private TwoTieredTable table;
+		private TranspositionTable table;
 		private List<List<Move>> quiescenceMoves;
 
 		private MoveLocker locker;
 
 		public Solver(double ttSize) :
-			this(new TwoTieredTable(gbytes: ttSize))
+			this(new TranspositionTable(gbytes: ttSize))
 		{
 		}
 
-		public Solver(TwoTieredTable table, MoveLocker locker = null)
+		public Solver(TranspositionTable table, MoveLocker locker = null)
 		{
 			// Parameters
 			

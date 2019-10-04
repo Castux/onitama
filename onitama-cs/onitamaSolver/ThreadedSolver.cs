@@ -11,7 +11,7 @@ namespace Onitama
 
 		public ThreadedSolver(int numThreads, double ttSize)
 		{
-			var table = new TwoTieredTable(gbytes: ttSize);
+			var table = new TranspositionTable(gbytes: ttSize);
 			var locker = new MoveLocker();
 
 			solvers = new List<Solver>();
