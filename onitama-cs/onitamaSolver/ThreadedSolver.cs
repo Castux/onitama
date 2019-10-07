@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Onitama
 {
@@ -22,93 +22,94 @@ namespace Onitama
 			}
 		}
 
-		public int ComputeValue(GameState state, int depth, out Move bestMove)
+		public Solver.Result? ComputeValue(GameState state, int depth)
 		{
 			var start = DateTime.Now;
+			var threads = new Thread[solvers.Count];
 
-			var tasks = new Task[solvers.Count];
-			var moves = new Move[solvers.Count];
-			var values = new int[solvers.Count];
+			Solver.Result? finalResult = null;
 
 			for(int i = 0; i < solvers.Count; i++)
 			{
 				int index = i;
-				var task = new Task(() =>
+				var thread = new Thread(() =>
 				{
-					values[index] = solvers[index].ComputeValue(state, depth, out Move thisBestMove);
-					moves[index] = thisBestMove;
+					var result = solvers[index].ComputeValue(state, depth);
 
-					var tmp = solvers[index].Interrupted ? " (interrupted)" : "";
+					lock (this)
+					{
+						if (!finalResult.HasValue && result.HasValue)
+						{
+							finalResult = result;
+							Console.WriteLine(depth + ": " + result.Value.bestMove + " " + result.Value.value + " " + (DateTime.Now - start));
+						}
 
-					Console.WriteLine(depth + ": " + thisBestMove + " " + values[index] + " " + (DateTime.Now - start) + tmp);
+						foreach (var solver in solvers)
+							solver.Interrupt();
+					}
 				});
 
-				tasks[index] = task;
-				task.Start();
+				threads[index] = thread;
+				thread.Start();
 			}
-			
-			var winner = Task.WaitAny(tasks);
 
-			foreach (var solver in solvers)
-				solver.Interrupt();
+			foreach (var thread in threads)
+				thread.Join();
 
-			Task.WaitAll(tasks);
-
-			bestMove = moves[winner];
-			return values[winner];
+			return finalResult;
 		}
 
-		public int ComputeValueIterative(GameState state, int depth, out Move bestMove)
+		public Solver.Result ComputeValueIterative(GameState state, int depth)
 		{
 			interrupt = false;
 
-			Move move = new Move();
-			int value = -Solver.Infinity;
+			Solver.Result result = new Solver.Result();
 
 			var start = DateTime.Now;
 
 			for(int i = 1; i <= depth && !interrupt; i++)
 			{
-				value = ComputeValue(state, i, out move);
-				if (Math.Abs(value) == Solver.WinScore)
-					break;
+				var thisResult = ComputeValue(state, i);
+				if (thisResult.HasValue)
+				{
+					result = thisResult.Value;
+					if (Math.Abs(result.value) == Solver.WinScore)
+						break;
+				}
 			}
 
 			Console.WriteLine("Total time: " + (DateTime.Now - start));
 
-			bestMove = move;
-			return value;
+			return result;
 		}
 
-		public int Run(GameState state, int depth, TimeSpan timeout, out Move bestMove)
+		public Solver.Result Run(GameState state, int depth, TimeSpan timeout)
 		{
-			Move result = new Move();
-			int value = -Solver.Infinity;
+			Solver.Result result = new Solver.Result();
 
-			var task = new Task(() =>
+			var thread = new Thread(() =>
 			{
-				value = ComputeValueIterative(state, depth, out result);
+				result = ComputeValueIterative(state, depth);
 			});
 
-			task.Start();
-			task.Wait(timeout);
+			thread.Start();
+			thread.Join(timeout);
 
 			Interrupt();
 
-			task.Wait();
+			thread.Join();
 
-			bestMove = result;
-			return value;
+			return result;
 		}
 
 		public void RunInBackground(GameState state)
 		{
-			var task = new Task(() =>
+			var thread = new Thread(() =>
 			{
-				ComputeValueIterative(state, int.MaxValue, out Move result);
+				ComputeValueIterative(state, int.MaxValue);
 			});
 
-			task.Start();
+			thread.Start();
 		}
 
 		public void Interrupt()
