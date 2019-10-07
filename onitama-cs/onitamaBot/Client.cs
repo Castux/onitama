@@ -128,7 +128,7 @@ public class Client
 	{
 		// Our turn
 
-		var result = solver.Run(game, int.MaxValue, timeout);
+		var result = solver.Run(game, int.MaxValue, timeout).Value;
 		var move = result.bestMove.Value;
 
 		var str = move.ToString(includeQuality: false);
@@ -138,7 +138,7 @@ public class Client
 
 		// We should receive the confirmation
 
-		str = server.Receive();
+		server.Receive();
 
 		// Apply move
 

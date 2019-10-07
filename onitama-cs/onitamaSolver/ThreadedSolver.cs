@@ -59,11 +59,11 @@ namespace Onitama
 			return finalResult;
 		}
 
-		public Solver.Result ComputeValueIterative(GameState state, int depth)
+		public Solver.Result? ComputeValueIterative(GameState state, int depth)
 		{
 			interrupt = false;
 
-			Solver.Result result = new Solver.Result();
+			Solver.Result? result = null;
 
 			var start = DateTime.Now;
 
@@ -72,8 +72,8 @@ namespace Onitama
 				var thisResult = ComputeValue(state, i);
 				if (thisResult.HasValue)
 				{
-					result = thisResult.Value;
-					if (Math.Abs(result.value) == Solver.WinScore)
+					result = thisResult;
+					if (Math.Abs(result.Value.value) == Solver.WinScore)
 						break;
 				}
 			}
@@ -83,9 +83,9 @@ namespace Onitama
 			return result;
 		}
 
-		public Solver.Result Run(GameState state, int depth, TimeSpan timeout)
+		public Solver.Result? Run(GameState state, int depth, TimeSpan timeout)
 		{
-			Solver.Result result = new Solver.Result();
+			Solver.Result? result = null;
 
 			var thread = new Thread(() =>
 			{
