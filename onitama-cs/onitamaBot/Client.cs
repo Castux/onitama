@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Net.Sockets;
 using Onitama;
 using System.Collections.Generic;
-using System.Threading;
 
 public class Server
 {
@@ -150,15 +149,13 @@ public class Client
 	{
 		// Run the solver for their side too, to start looking ahead
 
-		Thread thread = null;
-
 		if(lookahead)
-			thread = solver.RunInBackground(game);
+			solver.RunInBackground(game);
 
 		var str = server.Receive();
 
 		if(lookahead)
-			solver.Interrupt(thread);
+			solver.Interrupt();
 
 		Console.WriteLine("Other player plays: " + str);
 
