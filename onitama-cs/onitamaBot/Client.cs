@@ -128,8 +128,9 @@ public class Client
 	{
 		// Our turn
 
-		var result = solver.Run(game, int.MaxValue, timeout).Value;
-		var move = result.bestMove.Value;
+		solver.Run(game, int.MaxValue, timeout);
+		var result = solver.Result(game);
+		var move = result.move;
 
 		var str = move.ToString(includeQuality: false);
 

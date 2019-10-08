@@ -6,6 +6,7 @@ namespace Onitama
 {
 	public class ThreadedSolver
 	{
+		private TranspositionTable table;
 		private List<Solver> solvers;
 		private bool interrupt;
 
@@ -13,7 +14,7 @@ namespace Onitama
 
 		public ThreadedSolver(int numThreads, double ttSize)
 		{
-			var table = new TranspositionTable(gbytes: ttSize);
+			table = new TranspositionTable(gbytes: ttSize);
 			var locker = new MoveLocker();
 
 			solvers = new List<Solver>();
@@ -24,31 +25,20 @@ namespace Onitama
 			}
 		}
 
-		public Solver.Result? ComputeValue(GameState state, int depth)
+		public void ComputeValue(GameState state, int depth)
 		{
 			var start = DateTime.Now;
 			var threads = new Thread[solvers.Count];
-
-			Solver.Result? finalResult = null;
 
 			for(int i = 0; i < solvers.Count; i++)
 			{
 				int index = i;
 				var thread = new Thread(() =>
 				{
-					var result = solvers[index].ComputeValue(state, depth);
+					solvers[index].ComputeValue(state, depth);
 
-					lock (this)
-					{
-						if (!finalResult.HasValue && result.HasValue)
-						{
-							finalResult = result;
-							Console.WriteLine(depth + ": " + result.Value.bestMove + " " + result.Value.value + " " + (DateTime.Now - start));
-						}
-
-						foreach (var solver in solvers)
+					foreach (var solver in solvers)
 							solver.Interrupt();
-					}
 				});
 
 				threads[index] = thread;
@@ -57,41 +47,36 @@ namespace Onitama
 
 			foreach (var thread in threads)
 				thread.Join();
-
-			return finalResult;
 		}
 
-		public Solver.Result? ComputeValueIterative(GameState state, int depth)
+		public void ComputeValueIterative(GameState state, int depth)
 		{
 			interrupt = false;
-
-			Solver.Result? result = null;
 
 			var start = DateTime.Now;
 
 			for(int i = 1; i <= depth && !interrupt; i++)
 			{
-				var thisResult = ComputeValue(state, i);
-				if (thisResult.HasValue)
+				ComputeValue(state, i);
+
+				if(!interrupt)
 				{
-					result = thisResult;
-					if (Math.Abs(result.Value.value) == Solver.WinScore)
+					var result = Result(state);
+					Console.WriteLine("Depth {0}: {1} (value {2}) {3}", i, result.move, result.value, DateTime.Now - start);
+
+					if (Math.Abs(result.value) == Solver.WinScore)
 						break;
 				}
 			}
 
 			Console.WriteLine("Total time: " + (DateTime.Now - start));
-
-			return result;
 		}
 
-		public Solver.Result? Run(GameState state, int depth, TimeSpan timeout)
+		public void Run(GameState state, int depth, TimeSpan timeout)
 		{
-			Solver.Result? result = null;
-
 			var thread = new Thread(() =>
 			{
-				result = ComputeValueIterative(state, depth);
+				ComputeValueIterative(state, depth);
 			});
 
 			thread.Start();
@@ -100,8 +85,11 @@ namespace Onitama
 			Interrupt();
 
 			thread.Join();
+		}
 
-			return result;
+		public TranspositionTable.Value Result(GameState state)
+		{
+			return table.Get(state).Value;
 		}
 
 		public void RunInBackground(GameState state)

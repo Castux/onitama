@@ -5,18 +5,6 @@ namespace Onitama
 {
 	public class Solver
 	{
-		public struct Result
-		{
-			public int value;
-			public Move? bestMove;
-
-			public Result(int value, Move? bestMove)
-			{
-				this.value = value;
-				this.bestMove = bestMove;
-			}
-		}
-
 		// Scores are saved a signed bytes in the transposition table,
 		// so they should be in [-128,127].
 
@@ -58,17 +46,17 @@ namespace Onitama
 				quiescenceMoves.Add(new List<Move>());
 		}
 
-		public Result? ComputeValue(GameState state, int depth)
+		public void ComputeValue(GameState state, int depth)
 		{
 			interrupt = false;
 
 			try
 			{
-				return ComputeValue(state, depth, 0, -Infinity, Infinity);
+				ComputeValue(state, depth, 0, -Infinity, Infinity);
 			}
 			catch(TimeoutException)
 			{
-				return null;
+				return;
 			}
 		}
 
@@ -82,18 +70,16 @@ namespace Onitama
 			get { return interrupt; }
 		}
 
-		private Result ComputeValue(GameState state, int depth, int ply, int alpha, int beta)
+		private int ComputeValue(GameState state, int depth, int ply, int alpha, int beta)
 		{
 			if(state.board.BottomWon() || state.board.TopWon())
 			{
-				var leafValue = ComputeLeafValue(state);
-				return new Result(leafValue, null);
+				return ComputeLeafValue(state);
 			}
 
 			if (depth == 0)
 			{
-				var quietValue = QuiescenceSearch(state, alpha, beta, 0);
-				return new Result(quietValue, null);
+				return QuiescenceSearch(state, alpha, beta, 0);
 			}
 
 			var startAlpha = alpha;
@@ -113,7 +99,7 @@ namespace Onitama
 					switch (ttEntry.Value.flag)
 					{
 						case TranspositionTable.Flag.Exact:
-							return new Result(ttEntry.Value.value, ttEntry.Value.move);
+							return ttEntry.Value.value;
 						case TranspositionTable.Flag.Lower:
 							alpha = Math.Max(alpha, ttEntry.Value.value);
 							break;
@@ -124,7 +110,7 @@ namespace Onitama
 
 					if (alpha >= beta)
 					{
-						return new Result(ttEntry.Value.value, ttEntry.Value.move);
+						return ttEntry.Value.value;
 					}
 				}
 			}
@@ -157,7 +143,7 @@ namespace Onitama
 
 			if(moves.Count == 0)
 			{
-				return new Result(-WinScore, null);
+				return -WinScore;
 			}
 
 			// Do the thing!
@@ -212,15 +198,15 @@ namespace Onitama
 
 				if (i == 0)
 				{
-					childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha).value;
+					childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
 				}
 				else
 				{
-					childValue = -ComputeValue(childState, depth - 1, ply + 1, -alpha-1, -alpha).value;
+					childValue = -ComputeValue(childState, depth - 1, ply + 1, -alpha-1, -alpha);
 
 					if (childValue > alpha && childValue < beta)
 					{
-						childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha).value;
+						childValue = -ComputeValue(childState, depth - 1, ply + 1, -beta, -alpha);
 					}
 				}
 
@@ -277,7 +263,7 @@ namespace Onitama
 
 
 			table.Add(state, moves[bestMoveIndex], value, depth, flag);
-			return new Result(value, moves[bestMoveIndex]);
+			return value;
 		}
 
 		private int ComputeLeafValue(GameState state)

@@ -1,9 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>default Ox,Horse,Rabbit,Frog,Crane top 16 1000 4 1</StartArguments>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>default Ox,Horse,Dragon,Frog,Tiger top 15 1000 8</StartArguments>
   </PropertyGroup>
@@ -19,5 +15,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartArguments>default Ox,Horse,Dragon,Frog,Tiger top 15 1000 4</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>"..T..tt.tt..........bbBbb" Ox,Horse,Dragon,Frog,Tiger top 1000 15 4 4</StartArguments>
   </PropertyGroup>
 </Project>
