@@ -62,14 +62,12 @@ namespace Onitama
 		{
 			interrupt = false;
 
-			try
-			{
-				return ComputeValue(state, depth, 0, -Infinity, Infinity);
-			}
-			catch(TimeoutException)
-			{
-				return null;
-			}
+			Result? result = ComputeValue(state, depth, 0, -Infinity, Infinity);
+
+			if (Interrupted)
+				result = null;
+
+			return result;
 		}
 
 		public void Interrupt()
@@ -251,7 +249,7 @@ namespace Onitama
 
 				if (interrupt)
 				{
-					throw new TimeoutException();
+					return new Result(-Infinity, null);
 				}
 
 				// If the first move (guessed to be the best) hasn't caused a cutoff, generate the rest of the moves here

@@ -102,7 +102,7 @@ namespace Onitama
 			return result;
 		}
 
-		public void RunInBackground(GameState state)
+		public Thread RunInBackground(GameState state)
 		{
 			var thread = new Thread(() =>
 			{
@@ -110,14 +110,18 @@ namespace Onitama
 			});
 
 			thread.Start();
+
+			return thread;
 		}
 
-		public void Interrupt()
+		public void Interrupt(Thread thread = null)
 		{
 			foreach (var solver in solvers)
 				solver.Interrupt();
 
 			interrupt = true;
+
+			thread?.Join();
 		}
 	}
 }
