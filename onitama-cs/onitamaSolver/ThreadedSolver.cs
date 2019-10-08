@@ -9,6 +9,8 @@ namespace Onitama
 		private List<Solver> solvers;
 		private bool interrupt;
 
+		private Thread backgroundThread;
+
 		public ThreadedSolver(int numThreads, double ttSize)
 		{
 			var table = new TranspositionTable(gbytes: ttSize);
@@ -104,15 +106,22 @@ namespace Onitama
 
 		public void RunInBackground(GameState state)
 		{
-			var thread = new Thread(() =>
+			backgroundThread = new Thread(() =>
 			{
 				ComputeValueIterative(state, int.MaxValue);
 			});
 
-			thread.Start();
+			backgroundThread.Start();
 		}
 
-		public void Interrupt()
+		public void InterruptBackground()
+		{
+			Interrupt();
+
+			backgroundThread.Join();
+		}
+
+		private void Interrupt()
 		{
 			foreach (var solver in solvers)
 				solver.Interrupt();

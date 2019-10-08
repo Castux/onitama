@@ -155,7 +155,7 @@ public class Client
 		var str = server.Receive();
 
 		if(lookahead)
-			solver.Interrupt();
+			solver.InterruptBackground();
 
 		Console.WriteLine("Other player plays: " + str);
 
