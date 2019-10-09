@@ -64,7 +64,7 @@ public static class Tester
 		solver.Run(gameState, depth, timeout);
 
 		var best = solver.Result(gameState);
-		Console.WriteLine("Best move: {0}, value {1}, depth {2})", best.move, best.value, best.depth);
+		Console.WriteLine("Best move: {0}, value {1}, depth {2}", best.move, best.value, best.depth);
 
 		Exit();
 	}
